@@ -77,7 +77,10 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 
 ## **Changelog**
 
-- **v1.0 - 2025-05-28 - Initial version**
+- **v1.1 - 2025-05-28 - exclude_deleted_cards**
+- Added option (`exclude_deleted_cards`) to control inclusion of reviews from deleted cards (default: true, excludes them).
+
+- **v1.0 - 2025-05-27 - Initial version**
   - Displays a stacked bar graph of card states (Learning, Young, Mature, Retained) over time.
   - Data aggregation based on statistics period (1m, 3m, 1y, all).
   - Customizable visibility for each card state series.
