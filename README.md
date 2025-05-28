@@ -10,7 +10,7 @@
   *Anki's statistics screen with the "Accumulated Retention Graph" add-on installed:*/<br>
   *Tela de estatísticas do Anki com o add-on "Accumulated Retention Graph" instalado:*
   <br>
-  <img src="https://i.ibb.co/FbbxVvxp/image.png" alt="Screenshot of Accumulated Retention Graph">
+  <img src="https://i.ibb.co/VpvWnjvy/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
 ## **English**
@@ -39,24 +39,6 @@ Accumulated Retention Graph is an Anki addon that provides a visual representati
 - **Track Progress Over Time:** See how the distribution of your card states changes, indicating learning progression or areas needing more attention.
 - **Identify Trends:** Understand if you are consistently maturing cards or if many are stuck in early learning phases.
 - **Integrated View:** The graph is added directly to the existing Anki statistics screen for the current deck or entire collection.
-
-### Configuration
-
-You can customize the addon's behavior by editing the `config.json` file within the addon's folder. The available options are also described in `config.md`:
-
--   `hide_learning` (boolean): If `true`, the "Learning" section in the stacked bar graph is not shown. Default: `false`.
--   `hide_young` (boolean): If `true`, the "Young" section is not shown. Default: `false`.
--   `hide_mature` (boolean): If `true`, the "Mature" section is not shown. Default: `false`.
--   `hide_retained` (boolean): If `true`, the "Retained" section is not shown. Default: `false`.
--   `show_at_beginning` (boolean): If `true`, the evolution graph will be displayed *before* Anki's default card statistics graph. If `false`, it will be displayed *after*. Default: `false`.
-
-(The `translation_maps` key in `config.json` is used for internationalization and should generally not be modified unless you are adding new translations.)
-
-### License and Contact
-
-- **Copyright(C)** [Carlos Duarte]
-- Licensed under [GNU AGPL, version 3](http://www.gnu.org/licenses/agpl.html)
-- For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues) (Note: This is a placeholder URL, please update it with your actual repository URL).
 
 ---
 
@@ -87,23 +69,11 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 - **Identifique Tendências:** Entenda se você está consistentemente maturando cartões ou se muitos estão presos nas fases iniciais de aprendizado.
 - **Visão Integrada:** O gráfico é adicionado diretamente à tela de estatísticas existente do Anki para o baralho atual ou coleção inteira.
 
-### Configuração
-
-Você pode customizar o comportamento do addon editando o arquivo `config.json` dentro da pasta do addon. As opções disponíveis também são descritas em `config.md`:
-
--   `hide_learning` (booleano): Se `true`, a seção "Aprendendo" no gráfico de barras empilhadas não é mostrada. Padrão: `false`.
--   `hide_young` (booleano): Se `true`, a seção "Jovem" não é mostrada. Padrão: `false`.
--   `hide_mature` (booleano): Se `true`, a seção "Maduro" não é mostrada. Padrão: `false`.
--   `hide_retained` (booleano): Se `true`, a seção "Retido" não é mostrada. Padrão: `false`.
--   `show_at_beginning` (booleano): Se `true`, o gráfico de evolução será exibido *antes* do gráfico de estatísticas padrão do Anki. Se `false`, será exibido *depois*. Padrão: `false`.
-
-(A chave `translation_maps` em `config.json` é usada para internacionalização e geralmente não deve ser modificada, a menos que você esteja adicionando novas traduções.)
-
-### Licença e Contato
+### License and Contact
 
 - **Copyright(C)** [Carlos Duarte]
-- Licenciado sob [GNU AGPL, version 3](http://www.gnu.org/licenses/agpl.html)
-- For bugs or suggestions, please open an issue em [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues) (Nota: Esta é uma URL de placeholder, por favor, atualize-a com a URL do seu repositório real).
+- Licensed under [GNU AGPL, version 3](http://www.gnu.org/licenses/agpl.html)
+- For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues) (Note: This is a placeholder URL, please update it with your actual repository URL).
 
 ## **Changelog**
 

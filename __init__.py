@@ -123,6 +123,12 @@ def get_card_evolution_data(self_instance):
     main_revlog_query_conditions = [f"id < {end_date_timestamp_ms}"]
     if revlog_deck_tag_filter_sql:
         main_revlog_query_conditions.append(revlog_deck_tag_filter_sql)
+
+    config = mw.addonManager.getConfig(__name__)
+    exclude_deleted = config.get("exclude_deleted_cards", True) # Padrão True se não encontrado
+
+    if exclude_deleted:
+        main_revlog_query_conditions.append("cid IN (SELECT id FROM cards)")
     
     query = f"""
         SELECT id, cid, type, ivl

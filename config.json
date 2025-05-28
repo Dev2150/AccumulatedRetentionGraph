@@ -4,6 +4,7 @@
 	"hide_mature": false,
 	"hide_retained": false,
 	"show_at_beginning": false,
+	"exclude_deleted_cards": true,
 	"translation_maps": {
 		"en": {
 			"label_retained": "Retained (>84 days)",
