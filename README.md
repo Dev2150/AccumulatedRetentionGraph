@@ -42,7 +42,7 @@ Accumulated Retention Graph is an Anki addon that provides a visual representati
 
 ### Configuration
 
-You can customize the addon's behavior by editing the `config.json` file within the addon's folder (`zz_evolution`). The available options are also described in `config.md`:
+You can customize the addon's behavior by editing the `config.json` file within the addon's folder. The available options are also described in `config.md`:
 
 -   `hide_learning` (boolean): If `true`, the "Learning" section in the stacked bar graph is not shown. Default: `false`.
 -   `hide_young` (boolean): If `true`, the "Young" section is not shown. Default: `false`.
@@ -89,7 +89,7 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 
 ### Configuração
 
-Você pode customizar o comportamento do addon editando o arquivo `config.json` dentro da pasta do addon (`zz_evolution`). As opções disponíveis também são descritas em `config.md`:
+Você pode customizar o comportamento do addon editando o arquivo `config.json` dentro da pasta do addon. As opções disponíveis também são descritas em `config.md`:
 
 -   `hide_learning` (booleano): Se `true`, a seção "Aprendendo" no gráfico de barras empilhadas não é mostrada. Padrão: `false`.
 -   `hide_young` (booleano): Se `true`, a seção "Jovem" não é mostrada. Padrão: `false`.

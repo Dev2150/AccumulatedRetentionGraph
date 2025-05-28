@@ -50,22 +50,16 @@ def tr(key: str, **kwargs: Any) -> str:
     """Translates a key into the current language using maps from config.json."""
     lang_code = get_language_code()
     
-    # Use mw.addonManager.getConfig(__name__) for the "evolution" addon.
-    # Note: __name__ here will be "translations" if this module is imported directly.
-    # We need the addon's actual folder name or its __name__ from __init__.py perspective.
-    # A common practice is to pass mw to functions like this, or have a global way to get addon's __name__.
-    # For simplicity, assuming this function is called from contexts where mw.addonManager.getConfig can find
-    # the correct addon (e.g., if the addon's root __init__.py sets up something or calls this).
-    # A more robust way:
-    # addon_package_name = __name__.split('.')[0] # if part of a package
-    # config = mw.addonManager.getConfig(addon_package_name)
-    # For now, let's assume 'evolution' is discoverable or use a direct reference if needed.
-    # The most direct way is to get the config from the main addon module.
-    # However, the original example `from .config import getUserOption` suggests a helper.
-    # Since `evolution`'s `__init__.py` uses `mw.addonManager.getConfig(__name__)` directly,
-    # we should replicate that pattern for consistency if this `tr` function is to be self-contained
-    # in terms of config loading.
-    # The __name__ for the addon is usually the folder name, which is 'evolution'.
+    # This function uses mw.addonManager.getConfig(__package__) to load the
+    # configuration for the current addon. The __package__ variable typically
+    # resolves to the addon's root folder name, which Anki uses as the addon ID.
+    #
+    # For example, if your addon's folder is named "MySuperAddon",
+    # __package__ would likely be "MySuperAddon", and Anki's addon manager
+    # would use this ID to find the correct config.json file.
+    #
+    # The core idea is to retrieve the 'translation_maps' from the addon's
+    # config.json based on this dynamically determined package name.
     all_config = mw.addonManager.getConfig(__package__)
 
     if not all_config:
