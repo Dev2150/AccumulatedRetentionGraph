@@ -6,6 +6,13 @@
 
 ---
 
+<p align="center">
+  *Anki's statistics screen with the "Accumulated Retention Graph" add-on installed:*/<br>
+  *Tela de estatísticas do Anki com o add-on "Accumulated Retention Graph" instalado:*
+  <br>
+  <img src="https://i.ibb.co/FbbxVvxp/image.png" alt="Screenshot of Accumulated Retention Graph">
+</p>
+
 ## **English**
 
 ### What is Accumulated Retention Graph?
