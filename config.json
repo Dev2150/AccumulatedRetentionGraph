@@ -1,0 +1,35 @@
+{
+	"hide_learning": false,
+	"hide_young": false,
+	"hide_mature": false,
+	"hide_retained": false,
+	"show_at_beginning": false,
+	"translation_maps": {
+		"en": {
+			"label_retained": "Retained (>84 days)",
+			"label_mature": "Mature (>21 days)",
+			"label_young": "Young (>7 days)",
+			"label_learning": "Learning",
+			"label_today": "Today",
+			"tooltip_period": "Period: ",
+			"tooltip_total": "Total: ",
+			"graph_title": "Accumulated Retention",
+			"graph_subtitle": "Amount of cards by state over time.",
+			"graph_no_data": "No review data found for the selected period/deck.",
+			"graph_y_label": "Card Count"
+		},
+		"pt_BR": {
+			"label_retained": "Retidos (>84 dias)",
+			"label_mature": "Maduros (>21 dias)",
+			"label_young": "Jovens (>7 dias)",
+			"label_learning": "Aprendendo",
+			"label_today": "Hoje",
+			"tooltip_period": "Período: ",
+			"tooltip_total": "Total: ",
+			"graph_title": "Retenção Acumulada",
+			"graph_subtitle": "Quantidade de cartões por estado ao longo do tempo.",
+			"graph_no_data": "Nenhum dado de revisão encontrado para o período/deck selecionado.",
+			"graph_y_label": "Nº de Cartões"
+		}
+	}
+}
