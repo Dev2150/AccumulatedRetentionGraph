@@ -13,8 +13,8 @@ Este guia descreve um método para implementar um sistema de tradução multilí
 2.  **`translations.py` (na raiz do addon):**
     *   Centraliza a lógica de detecção de idioma e busca de traduções.
     *   Principais componentes:
-        *   `SUPPORTED_LANGUAGES = ["en", "pt_BR", ...]` (lista de códigos de idioma).
         *   `DEFAULT_LANG = "en"` (idioma padrão).
+        *   `get_supported_languages() -> list`: Extrai dinamicamente os idiomas suportados do `config.json`.
         *   `get_language_code() -> str`: Detecta o idioma ativo (Anki, sistema, fallback para `DEFAULT_LANG`).
         *   `tr(key: str, **kwargs: Any) -> str`: Função principal para buscar e formatar traduções.
 
@@ -61,105 +61,125 @@ Este guia descreve um método para implementar um sistema de tradução multilí
     ```python
     from typing import Any
     from aqt.qt import QLocale
-    from aqt import mw # Necessário para getConfig e preferências de idioma do Anki
+    from aqt import mw
 
-    # --- Configuração Específica do Addon ---
-    ADDON_ID = "__NAME_OF_YOUR_ADDON_FOLDER__" # IMPORTANTE: Substitua pelo nome da pasta do seu addon
-    # -----------------------------------------
+    DEFAULT_LANG = "en"
 
-    SUPPORTED_LANGUAGES = ["en", "pt_BR"] # Adicione todos os códigos de idioma que você suporta
-    DEFAULT_LANG = "en" # Idioma padrão se a detecção falhar ou o idioma não for suportado
+    def get_supported_languages() -> list:
+        """Extrai dinamicamente os idiomas suportados do config.json."""
+        try:
+            config = mw.addonManager.getConfig(__package__)
+            if config and "translation_maps" in config:
+                supported = list(config["translation_maps"].keys())
+                print(f"[Addon: {__package__}] Idiomas suportados encontrados no config: {supported}")
+                return supported
+        except Exception as e:
+            print(f"[Addon: {__package__}] Erro ao extrair idiomas do config: {e}")
+        
+        # Fallback para lista mínima
+        fallback = [DEFAULT_LANG]
+        print(f"[Addon: {__package__}] Usando fallback de idiomas: {fallback}")
+        return fallback
 
     def get_language_code() -> str:
         """
-        Determina o código de idioma a ser usado para tradução.
-        Prioridade:
-        1. Idioma configurado no Anki (match exato ou prefixo de 2 letras).
-        2. Idioma do sistema operacional (match exato ou prefixo de 2 letras).
-        3. DEFAULT_LANG.
+        Detecta o idioma atual usando funções nativas do Anki.
+        Prioridade: Anki -> Sistema -> DEFAULT_LANG
         """
+        supported_languages = get_supported_languages()
+        
+        # 1. Tentar idioma do Anki primeiro
         raw_anki_lang = None
         try:
-            # Tenta obter o idioma padrão do perfil Anki (disponível quando um perfil está carregado)
             if mw and mw.pm and mw.pm.meta:
                 raw_anki_lang = mw.pm.meta.get('defaultLang')
-        except AttributeError:
-            # mw, mw.pm, ou mw.pm.meta podem não estar disponíveis em todos os contextos (ex: inicialização precoce)
-            pass
+                print(f"[Addon: {__package__}] Idioma do Anki detectado: {raw_anki_lang}")
         except Exception as e:
-            # print(f"[{ADDON_ID}] Error accessing Anki language settings: {e}")
-            pass
+            print(f"[Addon: {__package__}] Erro ao acessar idioma do Anki: {e}")
 
         if raw_anki_lang:
-            if raw_anki_lang in SUPPORTED_LANGUAGES:
+            # Match exato
+            if raw_anki_lang in supported_languages:
+                print(f"[Addon: {__package__}] Usando idioma do Anki (match exato): {raw_anki_lang}")
                 return raw_anki_lang
+            # Match por prefixo (ex: "pt" de "pt_BR")
             lang_prefix = raw_anki_lang[:2]
-            if lang_prefix in SUPPORTED_LANGUAGES:
+            if lang_prefix in supported_languages:
+                print(f"[Addon: {__package__}] Usando idioma do Anki (match prefixo): {lang_prefix}")
                 return lang_prefix
 
+        # 2. Tentar idioma do sistema
         raw_sys_lang = None
         try:
-            raw_sys_lang = QLocale().name()  # Formato como "en_US", "pt_BR"
-        except Exception:
-            # print(f"[{ADDON_ID}] Error accessing system language: {e}")
-            pass # QLocale pode não estar disponível ou falhar
+            raw_sys_lang = QLocale().name()  # Formato "en_US", "pt_BR"
+            print(f"[Addon: {__package__}] Idioma do sistema detectado: {raw_sys_lang}")
+        except Exception as e:
+            print(f"[Addon: {__package__}] Erro ao acessar idioma do sistema: {e}")
 
         if raw_sys_lang:
-            if raw_sys_lang in SUPPORTED_LANGUAGES:
+            # Match exato
+            if raw_sys_lang in supported_languages:
+                print(f"[Addon: {__package__}] Usando idioma do sistema (match exato): {raw_sys_lang}")
                 return raw_sys_lang
+            # Match por prefixo
             sys_lang_prefix = raw_sys_lang[:2]
-            if sys_lang_prefix in SUPPORTED_LANGUAGES:
+            if sys_lang_prefix in supported_languages:
+                print(f"[Addon: {__package__}] Usando idioma do sistema (match prefixo): {sys_lang_prefix}")
                 return sys_lang_prefix
-                
+
+        # 3. Fallback para idioma padrão
+        print(f"[Addon: {__package__}] Usando idioma padrão (fallback): {DEFAULT_LANG}")
         return DEFAULT_LANG
 
     def tr(key: str, **kwargs: Any) -> str:
-        """
-        Busca uma string de tradução do config.json do addon.
-        - `key`: A chave da string a ser traduzida (ex: "greeting_key").
-        - `**kwargs`: Argumentos nomeados para formatar a string (ex: nome="Usuário").
-        Retorna a string traduzida e formatada, ou a própria chave se não encontrada.
-        """
+        """Traduz uma chave para o idioma atual usando os mapas do config.json."""
         lang_code = get_language_code()
         
-        config = mw.addonManager.getConfig(ADDON_ID)
+        config = mw.addonManager.getConfig(__package__)
         if not config:
-            # print(f"[{ADDON_ID}] Translation Error: Could not load addon configuration for ADDON_ID: '{ADDON_ID}'.")
+            print(f"[Addon: {__package__}] Erro de tradução: Não foi possível carregar configuração do addon.")
             return key
 
         translation_maps = config.get("translation_maps")
         if not translation_maps or not isinstance(translation_maps, dict):
-            # print(f"[{ADDON_ID}] Translation Error: 'translation_maps' not found or not a dict in config.json for ADDON_ID: '{ADDON_ID}'.")
+            print(f"[Addon: {__package__}] Erro de tradução: 'translation_maps' não encontrado ou não é um dict no config.json.")
             return key
 
-        # Tenta obter o mapa do idioma atual, senão usa o mapa do idioma padrão
-        lang_map = translation_maps.get(lang_code, translation_maps.get(DEFAULT_LANG, {}))
-        
-        text_template = lang_map.get(key)
+        # Log dos termos encontrados na primeira chamada
+        if not hasattr(tr, "_logged_terms"):
+            print(f"[Addon: {__package__}] Termos de tradução encontrados:")
+            for lang, terms in translation_maps.items():
+                if isinstance(terms, dict):
+                    print(f"  {lang}: {list(terms.keys())}")
+            tr._logged_terms = True
 
-        # Se não encontrou no idioma atual/padrão, e o idioma atual NÃO É o padrão, tenta o padrão explicitamente
-        if text_template is None and lang_code != DEFAULT_LANG:
-            default_map = translation_maps.get(DEFAULT_LANG, {})
-            text_template = default_map.get(key)
+        default_lang_map = translation_maps.get(DEFAULT_LANG, {})
+        current_lang_map = translation_maps.get(lang_code, default_lang_map)
+        
+        text_template = current_lang_map.get(key)
+        found_in_current = text_template is not None
+
+        if not found_in_current and lang_code != DEFAULT_LANG:
+            text_template = default_lang_map.get(key)
         
         if text_template is None:
-            # print(f"[{ADDON_ID}] Translation Warning: Key '{key}' not found for lang '{lang_code}' (nor in default '{DEFAULT_LANG}'). Displaying key name for ADDON_ID: '{ADDON_ID}'.")
-            return key 
+            print(f"[Addon: {__package__}] Aviso de tradução: Chave '{key}' não encontrada para idioma '{lang_code}' (nem no padrão '{DEFAULT_LANG}').")
+            return key
         
         try:
             return text_template.format(**kwargs) if kwargs else text_template
         except KeyError as e:
-            # print(f"[{ADDON_ID}] Translation Formatting Error for key '{key}' in lang '{lang_code}': {e}. Template: '{text_template}' for ADDON_ID: '{ADDON_ID}'")
-            return key # Retorna a chave para indicar um problema de formatação
+            print(f"[Addon: {__package__}] Erro de formatação na tradução da chave '{key}' em '{lang_code}': {e}. Template: '{text_template}'")
+            return key
         except Exception as e:
-            # print(f"[{ADDON_ID}] Unexpected error during translation of key '{key}' for ADDON_ID: '{ADDON_ID}': {e}")
+            print(f"[Addon: {__package__}] Erro inesperado na tradução da chave '{key}': {e}")
             return key
     ```
 
 *   **Importante:**
-    *   **Atualize `ADDON_ID`**: Substitua ` "__NAME_OF_YOUR_ADDON_FOLDER__" ` pelo nome exato da pasta raiz do seu addon (este é o ID que o Anki usa para `mw.addonManager.getConfig()`).
-    *   **Atualize `SUPPORTED_LANGUAGES`**: Liste todos os códigos de idioma para os quais você forneceu traduções no `config.json`.
-    *   **Atualize `DEFAULT_LANG`**: Defina seu idioma padrão preferido.
+    *   **Sistema Automático**: O sistema agora extrai automaticamente os idiomas suportados do `config.json`, não sendo necessário manter uma lista hard-coded.
+    *   **Logs Informativos**: O sistema produz logs detalhados mostrando idiomas detectados, termos encontrados e decisões de tradução.
+    *   **Funções Nativas do Anki**: Usa `mw.pm.meta.get('defaultLang')` e `QLocale().name()` para detectar idiomas.
 
 **3. Modificar Arquivos Python do Addon para Usar Traduções**
 
@@ -218,16 +238,29 @@ Este guia descreve um método para implementar um sistema de tradução multilí
 **4. Testar Completamente**
 
 *   Após implementar as mudanças, teste seu addon:
-    *   Mude o idioma do Anki para cada um dos `SUPPORTED_LANGUAGES` e verifique se todas as strings aparecem corretamente traduzidas.
+    *   Mude o idioma do Anki para cada um dos idiomas suportados e verifique se todas as strings aparecem corretamente traduzidas.
     *   Verifique o idioma padrão.
     *   Teste com um idioma não suportado para garantir que ele recorra ao `DEFAULT_LANG`.
-    *   Verifique o console do Anki (Ferramentas > Add-ons > Selecione seu addon > Verificar Arquivos > ... > Debug Console (se disponível via Anki Debug Tools) ou procure por logs se você descomentou os `print`s em `translations.py`) por quaisquer mensagens de erro ou aviso de tradução (chaves não encontradas, erros de formatação).
+    *   Verifique o console do Anki (Ferramentas > Add-ons > Debug Console) pelos logs informativos do sistema de tradução, que mostrarão:
+        *   Idiomas suportados encontrados
+        *   Idioma detectado do Anki/sistema
+        *   Idioma escolhido para uso
+        *   Termos de tradução disponíveis
+        *   Avisos de chaves não encontradas
 
 ## Considerações Adicionais:
 
 *   **Nomes de Chave:** Escolha nomes de chave descritivos e consistentes.
-*   **Contexto `mw`:** A função `get_language_code` e `tr` dependem de `mw` (a janela principal do Anki) para acessar as configurações do gerenciador de addons e as preferências de idioma. Isso geralmente está disponível quando a UI do addon é carregada. Se você precisar de traduções em um contexto onde `mw` não está disponível (o que é raro para strings voltadas para o usuário), você pode precisar de uma estratégia de fallback mais simples ou carregar as traduções de uma maneira diferente para esse contexto específico.
-*   **Atualização Dinâmica de Idioma:** Se o usuário mudar o idioma do Anki *durante uma sessão* e seu addon já estiver carregado, as strings traduzidas podem não atualizar imediatamente, pois `lang_code` é tipicamente determinado quando `tr` é chamado. Para a maioria dos addons, isso não é um grande problema, pois os usuários geralmente reiniciam o Anki após mudar o idioma. Uma atualização mais dinâmica exigiria hooks ou recarregar partes da UI do addon.
-*   **Manutenção:** Mantenha seu `config.json` e `translations.py` atualizados à medida que você adiciona ou modifica strings traduzíveis no seu addon.
+*   **Logs de Debug:** Os logs são úteis durante desenvolvimento. Você pode comentar ou remover os `print`s após a implementação estar estável.
+*   **Detecção Automática:** O sistema detecta automaticamente os idiomas disponíveis no `config.json`, facilitando adição de novos idiomas.
+*   **Contexto `mw`:** As funções dependem de `mw` (janela principal do Anki) para acessar configurações. Isso está disponível quando a UI do addon é carregada.
+*   **Atualização Dinâmica:** Se o usuário mudar o idioma do Anki durante uma sessão, as traduções podem não atualizar imediatamente. Usuários geralmente reiniciam o Anki após mudanças de idioma.
+*   **Manutenção:** Mantenha seu `config.json` atualizado à medida que adiciona novas strings traduzíveis.
 
-Este guia fornece uma base sólida para internacionalizar seu addon Anki. Lembre-se de substituir `ADDON_ID` e adaptar `SUPPORTED_LANGUAGES` e `DEFAULT_LANG` às suas necessidades. 
+## Recursos Avançados:
+
+*   **Fallback Inteligente:** Se uma chave não existe no idioma atual, o sistema automaticamente tenta o idioma padrão.
+*   **Match por Prefixo:** Se "pt_BR" não é suportado mas "pt" é, o sistema usa "pt" automaticamente.
+*   **Formatação Dinâmica:** Suporte completo a placeholders para strings com variáveis.
+
+Este guia fornece uma base sólida e moderna para internacionalizar seu addon Anki com detecção automática de idiomas e logs informativos para facilitar debug e manutenção. 

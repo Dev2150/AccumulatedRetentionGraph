@@ -1,8 +1,8 @@
 # **Accumulated Retention Graph**
 
-> **Note:** This document is available in both English and Portuguese. The English version is presented first, followed by the Portuguese version.
+> **Note:** This document is available in English, Portuguese, and Spanish. The English version is presented first, followed by the Portuguese version.
 >
-> **Nota:** Este documento está disponível em inglês e português. A versão em inglês é apresentada primeiro, seguida pela versão em português.
+> **Nota:** Este documento está disponível em inglês, português e espanhol. A versão em inglês é apresentada primeiro, seguida pela versão em português.
 
 ---
 
@@ -76,6 +76,14 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 - For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues) (Note: This is a placeholder URL, please update it with your actual repository URL).
 
 ## **Changelog**
+
+- **v1.2 - 2025-01-XX - Sistema de Tradução Automático**
+    - Reformulação completa do sistema de tradução com detecção automática de idiomas
+    - Lista de idiomas suportados agora é extraída dinamicamente do `config.json`
+    - Adicionados logs informativos detalhados para debug do sistema de tradução
+    - Adicionado suporte completo ao espanhol por padrão
+    - Atualização do `config.md` removendo configurações não implementadas
+    - Sistema mais robusto usando funções nativas do Anki para detecção de idioma
 
 - **v1.1 - 2025-05-28 - exclude_deleted_cards**
     - Added option (`exclude_deleted_cards`) to control inclusion of reviews from deleted cards (default: true, excludes them).

@@ -1,6 +1,7 @@
 # Ignora arquivos e pastas de cache do Python
 __pycache__/
 1613056169/
+Avaliar/
 *.pyc
 *.pyo
 

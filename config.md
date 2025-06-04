@@ -6,7 +6,8 @@ You can customize the addon's behavior by editing the `config.json` file within 
 -   `hide_young` (boolean): If `true`, the "Young" section is not shown. Default: `false`.
 -   `hide_mature` (boolean): If `true`, the "Mature" section is not shown. Default: `false`.
 -   `hide_retained` (boolean): If `true`, the "Retained" section is not shown. Default: `false`.
--   `show_at_beginning` (boolean): If `true`, the evolution graph will be displayed *before* Anki's default card statistics graph. If `false`, it will be displayed *after*. Default: `false`.
+-   `show_at_beginning` (boolean): If `true`, the evolution graph will be displayed *before* Anki's default card statistics graph (on the statistics screen). If `false`, it will be displayed *after*. Default: `false`.
+-   `exclude_deleted_cards` (boolean): If `true`, reviews from cards that were later deleted are excluded from the graph. Default: `true`.
 
 (The `translation_maps` key in `config.json` is used for internationalization and should generally not be modified unless you are adding new translations.)
 
@@ -18,6 +19,7 @@ Você pode customizar o comportamento do addon editando o arquivo `config.json` 
 -   `hide_young` (booleano): Se `true`, a seção "Jovem" não é mostrada. Padrão: `false`.
 -   `hide_mature` (booleano): Se `true`, a seção "Maduro" não é mostrada. Padrão: `false`.
 -   `hide_retained` (booleano): Se `true`, a seção "Retido" não é mostrada. Padrão: `false`.
--   `show_at_beginning` (booleano): Se `true`, o gráfico de evolução será exibido *antes* do gráfico de estatísticas padrão do Anki. Se `false`, será exibido *depois*. Padrão: `false`.
+-   `show_at_beginning` (booleano): Se `true`, o gráfico de evolução será exibido *antes* do gráfico de estatísticas padrão do Anki (na tela de estatísticas). Se `false`, será exibido *depois*. Padrão: `false`.
+-   `exclude_deleted_cards` (booleano): Se `true`, revisões de cartões que foram posteriormente deletados são excluídas do gráfico. Padrão: `true`.
 
 (A chave `translation_maps` em `config.json` é usada para internacionalização e geralmente não deve ser modificada, a menos que você esteja adicionando novas traduções.)

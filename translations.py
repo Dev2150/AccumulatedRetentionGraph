@@ -1,75 +1,96 @@
-from typing import Any # Added for type hinting
+from typing import Any
 from aqt.qt import QLocale
 from aqt import mw
 
-# Supported languages
-SUPPORTED_LANGUAGES = ["en", "pt_BR"]
 DEFAULT_LANG = "en"
+
+def get_supported_languages() -> list:
+    """Extrai dinamicamente os idiomas suportados do config.json."""
+    try:
+        config = mw.addonManager.getConfig(__package__)
+        if config and "translation_maps" in config:
+            supported = list(config["translation_maps"].keys())
+            print(f"[Addon: {__package__}] Idiomas suportados encontrados no config: {supported}")
+            return supported
+    except Exception as e:
+        print(f"[Addon: {__package__}] Erro ao extrair idiomas do config: {e}")
+    
+    # Fallback para lista mínima
+    fallback = [DEFAULT_LANG]
+    print(f"[Addon: {__package__}] Usando fallback de idiomas: {fallback}")
+    return fallback
 
 def get_language_code() -> str:
     """
-    Gets the current Anki language, falling back to system language or default.
-    Tries to match exact supported language codes first, then prefixes.
+    Detecta o idioma atual usando funções nativas do Anki.
+    Prioridade: Anki -> Sistema -> DEFAULT_LANG
     """
+    supported_languages = get_supported_languages()
+    
+    # 1. Tentar idioma do Anki primeiro
     raw_anki_lang = None
     try:
-        raw_anki_lang = mw.pm.meta.get('defaultLang')
-    except AttributeError:
-        pass # mw or mw.pm not available
-    except Exception:
-        pass # Other error fetching Anki lang
+        if mw and mw.pm and mw.pm.meta:
+            raw_anki_lang = mw.pm.meta.get('defaultLang')
+            print(f"[Addon: {__package__}] Idioma do Anki detectado: {raw_anki_lang}")
+    except Exception as e:
+        print(f"[Addon: {__package__}] Erro ao acessar idioma do Anki: {e}")
 
     if raw_anki_lang:
-        # 1. Try exact match with Anki's language setting
-        if raw_anki_lang in SUPPORTED_LANGUAGES:
+        # Match exato
+        if raw_anki_lang in supported_languages:
+            print(f"[Addon: {__package__}] Usando idioma do Anki (match exato): {raw_anki_lang}")
             return raw_anki_lang
-        # 2. Try prefix match with Anki's language setting (e.g., "pt" from "pt_BR")
-        #    Ensure the prefix itself is a supported code.
+        # Match por prefixo (ex: "pt" de "pt_BR")
         lang_prefix = raw_anki_lang[:2]
-        if lang_prefix in SUPPORTED_LANGUAGES:
+        if lang_prefix in supported_languages:
+            print(f"[Addon: {__package__}] Usando idioma do Anki (match prefixo): {lang_prefix}")
             return lang_prefix
 
+    # 2. Tentar idioma do sistema
     raw_sys_lang = None
     try:
-        raw_sys_lang = QLocale().name() # Format like "en_US", "pt_BR"
-    except Exception:
-        pass # Error fetching system lang
+        raw_sys_lang = QLocale().name()  # Formato "en_US", "pt_BR"
+        print(f"[Addon: {__package__}] Idioma do sistema detectado: {raw_sys_lang}")
+    except Exception as e:
+        print(f"[Addon: {__package__}] Erro ao acessar idioma do sistema: {e}")
 
     if raw_sys_lang:
-        # 3. Try exact match with system language
-        if raw_sys_lang in SUPPORTED_LANGUAGES:
+        # Match exato
+        if raw_sys_lang in supported_languages:
+            print(f"[Addon: {__package__}] Usando idioma do sistema (match exato): {raw_sys_lang}")
             return raw_sys_lang
-        # 4. Try prefix match with system language
+        # Match por prefixo
         sys_lang_prefix = raw_sys_lang[:2]
-        if sys_lang_prefix in SUPPORTED_LANGUAGES:
+        if sys_lang_prefix in supported_languages:
+            print(f"[Addon: {__package__}] Usando idioma do sistema (match prefixo): {sys_lang_prefix}")
             return sys_lang_prefix
-            
-    return DEFAULT_LANG # Final fallback
+
+    # 3. Fallback para idioma padrão
+    print(f"[Addon: {__package__}] Usando idioma padrão (fallback): {DEFAULT_LANG}")
+    return DEFAULT_LANG
 
 def tr(key: str, **kwargs: Any) -> str:
-    """Translates a key into the current language using maps from config.json."""
+    """Traduz uma chave para o idioma atual usando os mapas do config.json."""
     lang_code = get_language_code()
     
-    # This function uses mw.addonManager.getConfig(__package__) to load the
-    # configuration for the current addon. The __package__ variable typically
-    # resolves to the addon's root folder name, which Anki uses as the addon ID.
-    #
-    # For example, if your addon's folder is named "MySuperAddon",
-    # __package__ would likely be "MySuperAddon", and Anki's addon manager
-    # would use this ID to find the correct config.json file.
-    #
-    # The core idea is to retrieve the 'translation_maps' from the addon's
-    # config.json based on this dynamically determined package name.
-    all_config = mw.addonManager.getConfig(__package__)
-
-    if not all_config:
-        print(f"[Addon: {__package__}] Translation Error: Could not load addon configuration.")
+    config = mw.addonManager.getConfig(__package__)
+    if not config:
+        print(f"[Addon: {__package__}] Erro de tradução: Não foi possível carregar configuração do addon.")
         return key
 
-    translation_maps = all_config.get("translation_maps")
+    translation_maps = config.get("translation_maps")
     if not translation_maps or not isinstance(translation_maps, dict):
-        print(f"[Addon: {__package__}] Translation Error: \'translation_maps\' not found or not a dictionary in config.json.")
+        print(f"[Addon: {__package__}] Erro de tradução: 'translation_maps' não encontrado ou não é um dict no config.json.")
         return key
+
+    # Log dos termos encontrados na primeira chamada
+    if not hasattr(tr, "_logged_terms"):
+        print(f"[Addon: {__package__}] Termos de tradução encontrados:")
+        for lang, terms in translation_maps.items():
+            if isinstance(terms, dict):
+                print(f"  {lang}: {list(terms.keys())}")
+        tr._logged_terms = True
 
     default_lang_map = translation_maps.get(DEFAULT_LANG, {})
     current_lang_map = translation_maps.get(lang_code, default_lang_map)
@@ -78,20 +99,19 @@ def tr(key: str, **kwargs: Any) -> str:
     found_in_current = text_template is not None
 
     if not found_in_current and lang_code != DEFAULT_LANG:
-        # Try fallback to DEFAULT_LANG if not already using it and key not in current lang
         text_template = default_lang_map.get(key)
     
-    if text_template is None: # Still not found in current or default language map
-        print(f"[Addon: {__package__}] Translation Warning: Key \'{key}\' not found for language \'{lang_code}\' (nor in default \'{DEFAULT_LANG}\'). Displaying key name.")
-        return key # Return key itself
+    if text_template is None:
+        print(f"[Addon: {__package__}] Aviso de tradução: Chave '{key}' não encontrada para idioma '{lang_code}' (nem no padrão '{DEFAULT_LANG}').")
+        return key
     
     try:
         return text_template.format(**kwargs) if kwargs else text_template
     except KeyError as e:
-        print(f"[Addon: {__package__}] Translation Formatting Error for key \'{key}\' in lang \'{lang_code}\': {e}. Template: \'{text_template}\'")
+        print(f"[Addon: {__package__}] Erro de formatação na tradução da chave '{key}' em '{lang_code}': {e}. Template: '{text_template}'")
         return key
     except Exception as e:
-        print(f"[Addon: {__package__}] Unexpected error during translation of key \'{key}\': {e}")
+        print(f"[Addon: {__package__}] Erro inesperado na tradução da chave '{key}': {e}")
         return key
 
 # Add a way to allow dynamic updates if Anki language changes during session
