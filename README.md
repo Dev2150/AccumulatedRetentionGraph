@@ -10,7 +10,7 @@
   *Anki's statistics screen with the "Accumulated Retention Graph" add-on installed:*/<br>
   *Tela de estatísticas do Anki com o add-on "Accumulated Retention Graph" instalado:*
   <br>
-  <img src="https://i.ibb.co/VpvWnjvy/image.png" alt="Screenshot of Accumulated Retention Graph">
+  <img src="https://i.ibb.co/C5nGLZqj/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
 ## **English**
@@ -77,13 +77,11 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 
 ## **Changelog**
 
-- **v1.2 - 2025-01-XX - Sistema de Tradução Automático**
-    - Reformulação completa do sistema de tradução com detecção automática de idiomas
-    - Lista de idiomas suportados agora é extraída dinamicamente do `config.json`
-    - Adicionados logs informativos detalhados para debug do sistema de tradução
-    - Adicionado suporte completo ao espanhol por padrão
-    - Atualização do `config.md` removendo configurações não implementadas
-    - Sistema mais robusto usando funções nativas do Anki para detecção de idioma
+- **v1.2 - 2025-06-04 - Automatic Translation System**
+    - Complete overhaul of the translation system with automatic language detection
+    - Supported languages list is now dynamically extracted from `config.json`
+    - Added full Spanish support by default
+    - More robust system using native Anki functions for language detection
 
 - **v1.1 - 2025-05-28 - exclude_deleted_cards**
     - Added option (`exclude_deleted_cards`) to control inclusion of reviews from deleted cards (default: true, excludes them).
