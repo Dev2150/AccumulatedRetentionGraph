@@ -583,7 +583,7 @@ class CompleteCollectionStats:
         safe_subtitle = subtitle.replace('%', '%%')
 
         html_parts = []
-        html_parts.append('<h3 style="text-align: center; margin-bottom: 0.5em; color: #333;">')
+        html_parts.append('<h3 style="text-align: center; margin-bottom: 0.1em; color: #333;">')
         html_parts.append(safe_title)
         html_parts.append('</h3>')
         if safe_subtitle:
@@ -669,8 +669,8 @@ def _render_main_screen_graph_html(deck_id=None):
     
     graph_html = render_card_evolution_graph(stats_instance)
     
-    # Envolve o gráfico renderizado em um contêiner pai.
-    return f'<div class="evolution-graph-main-wrapper">{graph_html}</div>'
+    # Envolve o gráfico renderizado em um contêiner pai, agora com estilo.
+    return f'<div class="evolution-graph-main-wrapper" style="max-width: 900px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
 
 def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserContent):
     """Adiciona o gráfico na tela de listagem de baralhos (sem filtro de deck específico)."""
