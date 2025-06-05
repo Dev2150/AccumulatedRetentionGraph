@@ -6,6 +6,7 @@ from .translations import tr # Adicionado para tradução
 # import anki.pylib.text as text # This module seems to no longer exist or be needed here
 import time
 import math # Adicionado para math.floor
+import json
 
 # Card State Categories & Colors
 CAT_LEARNING = 0
@@ -45,6 +46,9 @@ def get_card_evolution_data(self_instance):
     except AttributeError:
         day_cutoff_s = self_instance.col.sched.dayCutoff
 
+    # Verificar se é tela principal (CompleteCollectionStats) e aplicar configuração
+    is_main_screen = hasattr(self_instance, '_deck_id')  # Nossa classe customizada tem este atributo
+    
     # stats_type: 0=1m, 1=3m, 2=1y, 3=all(deck life)
     # No Anki, parece que _periodDays retorna None para "all" (type 3),
     # e type 2 (1 year) também pode se comportar como "all" em termos de _periodDays, mas tem um tipo distinto.
@@ -61,29 +65,41 @@ def get_card_evolution_data(self_instance):
             anki_suggested_chunk_days = raw_chunk_from_anki[2]
         else:
             # Se get_start_end_chunk não retornar o esperado, recorremos ao tipo.
-            print(f"Card Evolution DEBUG: get_start_end_chunk() did not return expected tuple: {raw_chunk_from_anki}. Falling back to type.")
+            print("Card Evolution DEBUG: get_start_end_chunk() did not return expected tuple: " + str(raw_chunk_from_anki) + ". Falling back to type.")
             if stats_type_from_instance == 0: anki_suggested_chunk_days = 1
             elif stats_type_from_instance == 1: anki_suggested_chunk_days = 7
             else: anki_suggested_chunk_days = 30 # 1y ou all
 
     except (IndexError, AttributeError, TypeError) as e_chunk:
-        print(f"Card Evolution DEBUG: Error getting chunk via get_start_end_chunk(): {e_chunk}. Falling back to type.")
+        print("Card Evolution DEBUG: Error getting chunk via get_start_end_chunk(): " + str(e_chunk) + ". Falling back to type.")
         if stats_type_from_instance == 0: anki_suggested_chunk_days = 1
         elif stats_type_from_instance == 1: anki_suggested_chunk_days = 7
         else: anki_suggested_chunk_days = 30 # 1y ou all
 
-    # Forçar aggregation_chunk_days com base no tipo de estatística, 
-    # pois get_start_end_chunk()[2] parece inconsistente para 1y/all.
-    if stats_type_from_instance == 0: # 1 Mês
-        aggregation_chunk_days = 1
-    elif stats_type_from_instance == 1: # 3 Meses
-        aggregation_chunk_days = 7
-    elif stats_type_from_instance == 2: # 1 Ano
-        aggregation_chunk_days = 30 
-    elif stats_type_from_instance == 3: # Deck Life (All)
-        aggregation_chunk_days = 30
-    else: # Fallback para segurança, embora não deva acontecer
-        aggregation_chunk_days = anki_suggested_chunk_days
+    # Para tela principal, usar configuração; para tela de stats, usar lógica original
+    if is_main_screen:
+        config = mw.addonManager.getConfig(__name__)
+        aggregation_config = config.get("main_screen_aggregation", "w")
+        print("Card Evolution DEBUG: Main screen aggregation config: " + str(aggregation_config))
+        
+        if aggregation_config == "d":
+            aggregation_chunk_days = 1
+        else:  # 'w' ou default
+            aggregation_chunk_days = 7
+            
+        print("Card Evolution DEBUG: Main screen - forcing aggregation_chunk_days to: " + str(aggregation_chunk_days))
+    else:
+        # Lógica original para tela de estatísticas
+        if stats_type_from_instance == 0: # 1 Mês
+            aggregation_chunk_days = 1
+        elif stats_type_from_instance == 1: # 3 Meses
+            aggregation_chunk_days = 7
+        elif stats_type_from_instance == 2: # 1 Ano
+            aggregation_chunk_days = 30 
+        elif stats_type_from_instance == 3: # Deck Life (All)
+            aggregation_chunk_days = 30
+        else: # Fallback para segurança, embora não deva acontecer
+            aggregation_chunk_days = anki_suggested_chunk_days
 
     unit_suffix = "d"
     if aggregation_chunk_days == 7:
@@ -91,12 +107,12 @@ def get_card_evolution_data(self_instance):
     elif aggregation_chunk_days >= 28: # Inclui 30 e outros próximos para "mês"
         unit_suffix = "m"
     
-    print(f"Card Evolution DEBUG: Stats Type: {stats_type_from_instance}")
-    print(f"Card Evolution DEBUG: Raw period_days from Anki: {period_days}")
-    print(f"Card Evolution DEBUG: Raw chunk from Anki get_start_end_chunk(): {raw_chunk_from_anki}")
-    print(f"Card Evolution DEBUG: Anki suggested chunk_days: {anki_suggested_chunk_days}")
-    print(f"Card Evolution DEBUG: Determined aggregation_chunk_days: {aggregation_chunk_days}")
-    print(f"Card Evolution DEBUG: Determined unit_suffix: {unit_suffix}")
+    print("Card Evolution DEBUG: Stats Type: " + str(stats_type_from_instance))
+    print("Card Evolution DEBUG: Raw period_days from Anki: " + str(period_days))
+    print("Card Evolution DEBUG: Raw chunk from Anki get_start_end_chunk(): " + str(raw_chunk_from_anki))
+    print("Card Evolution DEBUG: Anki suggested chunk_days: " + str(anki_suggested_chunk_days))
+    print("Card Evolution DEBUG: Determined aggregation_chunk_days: " + str(aggregation_chunk_days))
+    print("Card Evolution DEBUG: Determined unit_suffix: " + str(unit_suffix))
 
     end_date_timestamp_ms = day_cutoff_s * 1000
     graph_start_day_idx = 0 
@@ -111,16 +127,16 @@ def get_card_evolution_data(self_instance):
             first_rev_query_conditions.append(revlog_deck_tag_filter_sql)
         first_rev_query = "SELECT MIN(id) FROM revlog"
         if first_rev_query_conditions:
-            first_rev_query += f" WHERE {' AND '.join(first_rev_query_conditions)}"
+            first_rev_query += " WHERE " + " AND ".join(first_rev_query_conditions)
         min_revlog_id_ms = self_instance.col.db.scalar(first_rev_query)
         if not min_revlog_id_ms: # Se não há revisões, retorna dados vazios
             print("Card Evolution DEBUG: No review log entries found for deck life.")
             return [], {}, ""
         days_ago = (day_cutoff_s - (min_revlog_id_ms / 1000)) // 86400
         graph_start_day_idx = -int(days_ago)
-        print(f"Card Evolution DEBUG: Deck life - graph_start_day_idx calculated as {graph_start_day_idx}")
+        print("Card Evolution DEBUG: Deck life - graph_start_day_idx calculated as " + str(graph_start_day_idx))
 
-    main_revlog_query_conditions = [f"id < {end_date_timestamp_ms}"]
+    main_revlog_query_conditions = ["id < " + str(end_date_timestamp_ms)]
     if revlog_deck_tag_filter_sql:
         main_revlog_query_conditions.append(revlog_deck_tag_filter_sql)
 
@@ -130,10 +146,10 @@ def get_card_evolution_data(self_instance):
     if exclude_deleted:
         main_revlog_query_conditions.append("cid IN (SELECT id FROM cards)")
     
-    query = f"""
+    query = """
         SELECT id, cid, type, ivl
         FROM revlog
-        WHERE {' AND '.join(main_revlog_query_conditions)}
+        WHERE """ + " AND ".join(main_revlog_query_conditions) + """
         ORDER BY id ASC
     """
     all_reviews = self_instance.col.db.all(query)
@@ -230,14 +246,18 @@ def get_card_evolution_data(self_instance):
         data_retained.append([x_chunk_idx, aggregated_flot_data[CAT_RETAINED].get(x_chunk_idx, 0)])
 
     config = mw.addonManager.getConfig(__name__)
+    
+    # Código para adicionar séries - "stack: True" removido de cada série individual.
+    # O empilhamento será controlado globalmente via JS (options.series.stack = true).
+    # "bars: {"order": X}" mantido para a ordem visual dentro do empilhamento.
     if not config.get("hide_retained"):
-        series.append({"data": data_retained, "label": tr("label_retained"), "color": COLOR_RETAINED, "bars": {"order": 1}, "stack": True})
+        series.append({"data": data_retained, "label": tr("label_retained"), "color": COLOR_RETAINED, "bars": {"order": 1}})
     if not config.get("hide_mature"):
-        series.append({"data": data_mature, "label": tr("label_mature"), "color": COLOR_MATURE, "bars": {"order": 2}, "stack": True})
+        series.append({"data": data_mature, "label": tr("label_mature"), "color": COLOR_MATURE, "bars": {"order": 2}})
     if not config.get("hide_young"):
-        series.append({"data": data_young, "label": tr("label_young"), "color": COLOR_YOUNG, "bars": {"order": 3}, "stack": True})
+        series.append({"data": data_young, "label": tr("label_young"), "color": COLOR_YOUNG, "bars": {"order": 3}})
     if not config.get("hide_learning"):
-        series.append({"data": data_learning, "label": tr("label_learning"), "color": COLOR_LEARNING, "bars": {"order": 4}, "stack": True})
+        series.append({"data": data_learning, "label": tr("label_learning"), "color": COLOR_LEARNING, "bars": {"order": 4}})
     
     min_x_val_for_axis = 0
     max_x_val_for_axis = 0
@@ -260,18 +280,18 @@ def get_card_evolution_data(self_instance):
     xaxis_min = min_x_val_for_axis - 0.5
     xaxis_max = max_x_val_for_axis + 0.5
     
-    # Construir o tickFormatter dinamicamente
+    # Construir o tickFormatter dinamicamente - SEM F-STRING
     tr_today = tr("label_today")
-    tick_formatter_js = f"""
-        function(val, axis) {{
-            var suffix = '{unit_suffix}';
-            var aggChunkDays = {aggregation_chunk_days};
-            if (aggChunkDays === 1 && Math.abs(val - 0) < 0.0001) {{
-                return '{tr_today}';
-            }}
-            return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;
-        }}
-    """.strip()
+    tick_formatter_js = (
+        "function(val, axis) {\n" +
+        "    var suffix = '" + unit_suffix + "';\n" +
+        "    var aggChunkDays = " + str(aggregation_chunk_days) + ";\n" +
+        "    if (aggChunkDays === 1 && Math.abs(val - 0) < 0.0001) {\n" +
+        "        return '" + tr_today + "';\n" +
+        "    }\n" +
+        "    return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;\n" +
+        "}"
+    )
 
     # Passar as strings traduzidas para o JS do tooltip
     tr_tooltip_period = tr("tooltip_period")
@@ -279,73 +299,21 @@ def get_card_evolution_data(self_instance):
     # As labels das séries já são traduzidas ao serem passadas para o Flot
     # Portanto, podemos usá-las diretamente no tooltip via item.series.label
 
-    tooltip_html = f"""
-<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:5px;border:1px solid #333;background-color:#f5f5f5;opacity:0.9;color:#000;">
-</div>
-<script>
-$(function() {{
-    var tooltip = $("#evolutionGraphTooltip").appendTo("body");
-    $("#evolutionGraph").bind("plothover", function (event, pos, item) {{
-        if (item) {{
-            var x_val_on_axis = item.datapoint[0];
-            var y_val = item.datapoint[1]; 
-            var seriesLabel = item.series.label; // Já traduzido
-            var totalForDay = 0;
-            
-            var plot = $(this).data("plot");
-            var allSeries = plot.getData();
-            var pointData = {{}}; // Usar chaves de série já traduzidas
-            
-            for(var i=0; i < allSeries.length; ++i){{
-                 var currentSeries = allSeries[i];
-                 if (!currentSeries.label) continue; 
-                for(var j=0; j < currentSeries.data.length; ++j){{
-                    var d = currentSeries.data[j];
-                    if(Math.abs(d[0] - x_val_on_axis) < 0.0001){{
-                         if(!pointData[x_val_on_axis]) pointData[x_val_on_axis] = {{}};
-                         pointData[x_val_on_axis][currentSeries.label] = d[1]; // Usa a label da série como chave
-                         totalForDay += d[1]; 
-                    }}
-                }}
-            }}
-            
-            var xaxes_options = plot.getOptions().xaxes[0];
-            var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
-            var aggregationChunkDaysFromOptions = xaxes_options.aggregation_chunk_days || 1;
-            var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
-            var displayX = x_val_on_axis.toFixed(tickDecimalsFromOptions);
-            var titleX;
-            var today_str = '{tr_today}'; // Passa a string "Hoje" traduzida
-
-            if (aggregationChunkDaysFromOptions === 1 && Math.abs(x_val_on_axis - 0) < 0.0001) {{
-                titleX = today_str;
-            }} else {{
-                titleX = displayX + unitSuffixFromOptions;
-            }}
-
-            var content = "<b>{tr_tooltip_period}" + titleX + "</b><br/>";
-            var labelLearning = "{tr("label_learning")}";
-            var labelYoung = "{tr("label_young")}";
-            var labelMature = "{tr("label_mature")}";
-            var labelRetained = "{tr("label_retained")}";
-
-            if(pointData[x_val_on_axis]){{
-                // Acessar usando as labels traduzidas que foram usadas para criar as séries
-                if(pointData[x_val_on_axis][labelLearning] !== undefined) content += labelLearning + ": " + pointData[x_val_on_axis][labelLearning].toFixed(0) + "<br/>";
-                if(pointData[x_val_on_axis][labelYoung] !== undefined) content += labelYoung + ": " + pointData[x_val_on_axis][labelYoung].toFixed(0) + "<br/>";
-                if(pointData[x_val_on_axis][labelMature] !== undefined) content += labelMature + ": " + pointData[x_val_on_axis][labelMature].toFixed(0) + "<br/>";
-                if(pointData[x_val_on_axis][labelRetained] !== undefined) content += labelRetained + ": " + pointData[x_val_on_axis][labelRetained].toFixed(0) + "<br/>";
-            }}
-            content += "<i>{tr_tooltip_total}" + totalForDay.toFixed(0) + "</i>";
-
-            tooltip.html(content).css({{top: item.pageY+5, left: item.pageX+5}}).fadeIn(200);
-        }} else {{
-            tooltip.hide();
-        }}
-    }});
-}});
-</script>
-"""
+    # Tooltip simplificado SEM F-STRINGS
+    tooltip_html = (
+        '<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:5px;border:1px solid #333;background-color:#f5f5f5;opacity:0.9;color:#000;"></div>'
+        '<script>'
+        '$(function() {'
+        'var tooltip = $("#evolutionGraphTooltip").appendTo("body");'
+        '$("#evolutionGraph").bind("plothover", function (event, pos, item) {'
+        'if (item) {'
+        'var content = "<b>Período: " + item.datapoint[0] + "</b><br/>" + item.series.label + ": " + item.datapoint[1];'
+        'tooltip.html(content).css({top: item.pageY+5, left: item.pageX+5}).fadeIn(200);'
+        '} else { tooltip.hide(); }'
+        '});'
+        '});'
+        '</script>'
+    )
     graph_options = {
         "xaxis": {
             "min": xaxis_min, 
@@ -377,6 +345,11 @@ def render_card_evolution_graph(self_instance):
     subtitle = tr("graph_subtitle")
     series_data, options, tooltip_html = get_card_evolution_data(self_instance)
 
+    # Remover prints de depuração
+    # print("Card Evolution Main Screen DEBUG (render_card_evolution_graph):")
+    # print("series_data = " + str(series_data))
+    # print("options = " + str(options))
+
     if not series_data or not any(s['data'] for s in series_data):
         return "<div style='text-align:center;margin-top:1em;'>" + tr("graph_no_data") + "</div>"
 
@@ -394,7 +367,7 @@ def render_card_evolution_graph(self_instance):
         ylabel=tr("graph_y_label")
         # Nenhum parâmetro xunit aqui
     )
-    html += tooltip_html
+    # html += tooltip_html # Comentado NOVAMENTE para depurar o problema de "jQuery or Flot not loaded"
     return html
 
 # --- Nova seção de Hooking --- 
@@ -488,3 +461,316 @@ else:
 # para dar alguma indicação de que o addon foi processado.
 if not (hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and hasattr(stats.CollectionStats, BACKUP_ATTR_NAME)):
      print(f"Card Evolution Addon was processed but could not apply graph hook to {TARGET_METHOD_NAME}.")
+
+# ===== INÍCIO DA INTEGRAÇÃO COM TELA PRINCIPAL =====
+
+# Imports adicionais para tela principal
+from aqt.gui_hooks import (
+    overview_will_render_content,
+    deck_browser_will_render_content,
+)
+from aqt.overview import OverviewContent
+from aqt.deckbrowser import DeckBrowserContent
+
+def inject_graph_into_main_screen(content, context):
+    """
+    Função para injetar o gráfico na tela principal, usando CompleteCollectionStats.
+    """
+    if not mw or not mw.col:
+        return
+
+    config = mw.addonManager.getConfig(__name__)
+    
+    # Verificar se a funcionalidade está habilitada
+    if not config.get("enable_main_screen", False):
+        return
+    
+    try:
+        # Criar classe CompleteCollectionStats SEM F-STRINGS
+        class CompleteCollectionStats:
+            def __init__(self, col, deck_id=None, period="3m"):
+                self.col = col
+                self._deck_id = deck_id
+                self._period = period
+                
+                if period == "1m":
+                    self.type = 0
+                elif period == "3m":
+                    self.type = 1
+                elif period == "1y":
+                    self.type = 2
+                else:
+                    self.type = 3
+                    
+            def _periodDays(self):
+                if self._period == "1m":
+                    return 30
+                elif self._period == "3m":
+                    return 90
+                elif self._period == "1y":
+                    return 365
+                else:
+                    return None
+                    
+            def _revlogLimit(self):
+                if not self._deck_id:
+                    return ""
+                
+                try:
+                    child_decks = [self._deck_id]
+                    for name, did in self.col.decks.children(self._deck_id):
+                        child_decks.append(did)
+                    deck_ids_str = ids2str(child_decks)
+                    return "cid IN (SELECT id FROM cards WHERE did IN " + deck_ids_str + ")"
+                except Exception as e:
+                    print("Card Evolution Main Screen: Erro ao construir filtro de deck: " + str(e))
+                    return ""
+                    
+            def get_start_end_chunk(self):
+                try:
+                    day_cutoff_s = self.col.sched.day_cutoff
+                except AttributeError:
+                    day_cutoff_s = int(time.time())
+                
+                # Obter configuração de agregação - apenas 'd' ou 'w'
+                aggregation_config = config.get("main_screen_aggregation", "w")
+                
+                # Determinar chunk_days baseado na configuração
+                if aggregation_config == "d":
+                    chunk_days = 1
+                else:  # 'w' ou qualquer outra coisa default para semanas
+                    chunk_days = 7
+                
+                if self._period == "1m":
+                    return (day_cutoff_s - (30 * 86400), day_cutoff_s, chunk_days)
+                elif self._period == "3m":
+                    return (day_cutoff_s - (90 * 86400), day_cutoff_s, chunk_days)
+                elif self._period == "1y":
+                    return (day_cutoff_s - (365 * 86400), day_cutoff_s, chunk_days)
+                else:
+                    first_rev_query = "SELECT MIN(id) FROM revlog"
+                    if self._deck_id:
+                        try:
+                            child_decks = [self._deck_id]
+                            for name, did in self.col.decks.children(self._deck_id):
+                                child_decks.append(did)
+                            deck_ids_str = ids2str(child_decks)
+                            first_rev_query += " WHERE cid IN (SELECT id FROM cards WHERE did IN " + deck_ids_str + ")"
+                        except:
+                            pass # Não falhar se a subquery do deck falhar
+                    
+                    min_revlog_id_ms = self.col.db.scalar(first_rev_query)
+                    if min_revlog_id_ms:
+                        start = min_revlog_id_ms // 1000
+                    else:
+                        start = day_cutoff_s - (365 * 86400) # Fallback para 1 ano se não houver revisões
+                    
+                    return (start, day_cutoff_s, chunk_days)
+            
+            def _title(self, title, subtitle=""):
+                # Escapar % para evitar erros de formatação de string do Python se tr() retornar %
+                safe_title = title.replace('%', '%%')
+                safe_subtitle = subtitle.replace('%', '%%')
+
+                html_parts = []
+                html_parts.append('<div style="margin: 1em 0; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">')
+                html_parts.append('<h3 style="text-align: center; margin-bottom: 0.5em; color: #333;">')
+                html_parts.append(safe_title)
+                html_parts.append('</h3>')
+                if safe_subtitle:
+                    html_parts.append('<p style="text-align: center; color: #666; margin-bottom: 1em; font-size: 0.9em;">')
+                    html_parts.append(safe_subtitle)
+                    html_parts.append('</p>')
+                html_parts.append('</div>')
+                return ''.join(html_parts)
+                
+            def _graph(self, id, data, conf, ylabel=""):
+                height = config.get("main_screen_height", 250)
+                safe_ylabel = ylabel.replace('%', '%%') # Escapar % para o ylabel HTML
+                
+                try:
+                    if not data or not any(s.get('data') for s in data):
+                        return '<div style="color:#888;text-align:center;margin:1em 0;">Sem dados para mostrar</div>'
+                    
+                    data_json_for_js = json.dumps(data)
+                    options_json_for_js = json.dumps(conf)
+
+                    py_unit_suffix = conf.get('xaxis', {}).get('unit_suffix', 'd')
+                    # py_unit_suffix não vem de tr(), então não precisa escapar aqui, a menos que tr() seja usado para ele em outro lugar.
+                    py_agg_days = conf.get('xaxis', {}).get('aggregation_chunk_days', 1)
+                    py_today_label = tr("label_today").replace('%', '%%') # Escapar % para string JS
+                    
+                    html_parts = []
+                    html_parts.append('<div id="')
+                    html_parts.append(id)
+                    html_parts.append('" style="height:')
+                    html_parts.append(str(height))
+                    html_parts.append('px; width:95%%; margin: 0 auto;"></div>')
+                    html_parts.append('<p style="text-align: center; font-size: 0.8em; color: #666; margin-top: 0.5em;">')
+                    html_parts.append(safe_ylabel)
+                    html_parts.append('</p>')
+                    
+                    # Depuração JS Aprimorada
+                    js_parts = []
+                    js_parts.append('<script type="text/javascript">')
+                    js_parts.append('(function() {')
+                    js_parts.append('  console.log("Card Evolution JS: Script execution started.");')
+
+                    js_parts.append('  function initPlot() {')
+                    # Diagnóstico mais detalhado do que está disponível
+                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: typeof window:", typeof window);')
+                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: typeof $:", typeof $);')
+                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: typeof jQuery:", typeof jQuery);')
+                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: window.$ available:", typeof window.$ !== "undefined");')
+                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: window.jQuery available:", typeof window.jQuery !== "undefined");')
+                    js_parts.append('    if (typeof $ !== "undefined") {')
+                    js_parts.append('      console.log("Card Evolution JS DIAGNOSTIC: $.plot available:", typeof $.plot !== "undefined");')
+                    js_parts.append('      console.log("Card Evolution JS DIAGNOSTIC: $.fn.jquery version:", $.fn.jquery);')
+                    js_parts.append('    }')
+                    
+                    # Check for jQuery first
+                    js_parts.append('    if (typeof $ === "undefined") {')
+                    js_parts.append('      console.log("Card Evolution JS: jQuery not available, will retry...");')
+                    js_parts.append('      return false;') 
+                    js_parts.append('    }')
+                    
+                    # If jQuery is available but Flot is not, try to load Flot dynamically
+                    js_parts.append('    if (typeof $.plot === "undefined") {')
+                    js_parts.append('      console.log("Card Evolution JS: Flot not loaded. Loading from CDN...");')
+                    js_parts.append('      var flotScript = document.createElement("script");')
+                    js_parts.append('      flotScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js";')
+                    js_parts.append('      flotScript.onload = function() {')
+                    js_parts.append('        console.log("Card Evolution JS: Flot loaded from CDN");')
+                    js_parts.append('        var stackScript = document.createElement("script");')
+                    js_parts.append('        stackScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.min.js";')
+                    js_parts.append('        stackScript.onload = function() {')
+                    js_parts.append('          console.log("Card Evolution JS: Stack plugin loaded");')
+                    js_parts.append('          setTimeout(function() { initPlot(); }, 100);')
+                    js_parts.append('        };')
+                    js_parts.append('        stackScript.onerror = function() {')
+                    js_parts.append('          console.log("Card Evolution JS: Stack plugin failed, proceeding anyway");')
+                    js_parts.append('          setTimeout(function() { initPlot(); }, 100);')
+                    js_parts.append('        };')
+                    js_parts.append('        document.head.appendChild(stackScript);')
+                    js_parts.append('      };')
+                    js_parts.append('      flotScript.onerror = function() {')
+                    js_parts.append('        console.error("Card Evolution JS: Failed to load Flot from CDN");')
+                    js_parts.append('      };')
+                    js_parts.append('      document.head.appendChild(flotScript);')
+                    js_parts.append('      return false;')
+                    js_parts.append('    }')
+                    
+                    js_parts.append('    console.log("Card Evolution JS: jQuery and Flot found. Initializing plot.");')
+
+                    js_parts.append('    $(function() {') # DOM ready
+                    js_parts.append('      console.log("Card Evolution JS: DOM ready function executed.");')
+                    js_parts.append('      setTimeout(function() {') # Adicionar setTimeout
+                    js_parts.append('        console.log("Card Evolution JS: setTimeout callback executed.");')
+                    js_parts.append('        try {')
+                    js_parts.append('          var graphDiv = $("#' + id + '");')
+                    js_parts.append('          if (graphDiv.length === 0) { console.error("Card Evolution JS: Graph div NOT FOUND! ID: ' + id + '"); return; }')
+                    
+                    js_parts.append('          var data = ' + data_json_for_js + ';')
+                    js_parts.append('          var options = ' + options_json_for_js + ';')
+                    
+                    js_parts.append('          if (options.xaxis && typeof options.xaxis.tickFormatter === "string") {')
+                    js_parts.append('            delete options.xaxis.tickFormatter;')
+                    js_parts.append('          }')
+                    
+                    js_parts.append('          if (options.series) {')
+                    js_parts.append('            options.series.stack = true;')
+                    js_parts.append('            if (options.series.bars) { options.series.bars.show = true; } else { options.series.bars = { show: true }; }')
+                    js_parts.append('          } else { options.series = { stack: true, bars: { show: true } }; }')
+
+                    js_parts.append('          options.xaxis.tickFormatter = function(val, axis) {')
+                    js_parts.append('            var unitSuffix = \'' + py_unit_suffix + '\';')
+                    js_parts.append('            var aggDays = ' + str(py_agg_days) + ';')
+                    js_parts.append('            var todayLabel = \'' + py_today_label + '\';')
+                    js_parts.append('            if (aggDays === 1 && Math.abs(val - 0) < 0.001) { return todayLabel; }')
+                    js_parts.append('            var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals;')
+                    js_parts.append('            return val.toFixed(decimals) + unitSuffix;')
+                    js_parts.append('          };')
+
+                    js_parts.append('          $.plot(graphDiv, data, options);')
+                    js_parts.append('        } catch (e) {')
+                    js_parts.append('          console.error("Card Evolution Main Screen Plot JS Error (in setTimeout):", e);')
+                    js_parts.append('          var currentData, currentOptions;')
+                    js_parts.append('          try { currentData = JSON.stringify(data); } catch (jsonErr) { currentData = "Error stringifying data"; }')
+                    js_parts.append('          try { currentOptions = JSON.stringify(options); } catch (jsonErr) { currentOptions = "Error stringifying options"; }')
+                    js_parts.append('          console.error("Data at time of error (in setTimeout):", currentData);')
+                    js_parts.append('          console.error("Options at time of error (in setTimeout):", currentOptions);')
+                    js_parts.append('        }')
+                    js_parts.append('      }, 50);') # Fim do setTimeout, com delay de 50ms
+                    js_parts.append('    });') # End DOM ready
+                    js_parts.append('    return true;') # Signal success
+                    js_parts.append('  }') # End initPlot function
+
+                    # Retry logic
+                    js_parts.append('  var attempts = 0;')
+                    js_parts.append('  function tryInit() {')
+                    js_parts.append('    attempts++;')
+                    js_parts.append('    if (initPlot()) {')
+                    js_parts.append('      console.log("Card Evolution JS: Plot initialized successfully or init scheduled.");')
+                    js_parts.append('    } else if (attempts < 10) {') # Try for approx 2 seconds (10 * 200ms)
+                    js_parts.append('      console.log("Card Evolution JS: Retrying plot initialization, attempt: " + attempts);')
+                    js_parts.append('      setTimeout(tryInit, 200);')
+                    js_parts.append('    } else {')
+                    js_parts.append('      console.error("Card Evolution JS: Failed to initialize plot. jQuery or Flot may not be loaded.");')
+                    js_parts.append('    }')
+                    js_parts.append('  }')
+                    js_parts.append('  tryInit();') # Start the retry process
+
+                    js_parts.append('})();')
+                    js_parts.append('</script>')
+                    
+                    return ''.join(html_parts) + ''.join(js_parts)
+                    
+                except Exception as e:
+                    # Erro na parte Python da geração do gráfico
+                    print("Card Evolution Main Screen: Erro ao gerar HTML/JS do gráfico (Python): " + str(e))
+                    import traceback
+                    print("Card Evolution Main Screen: Traceback (Python): " + str(traceback.format_exc()))
+                    return '<div style="color:red;text-align:center;">Erro Py ao gerar gráfico: ' + str(e) + '</div>'
+
+        # Determinar deck_id baseado no contexto
+        deck_id = None
+        if isinstance(context, OverviewContent):
+            try:
+                if hasattr(mw.col, 'decks') and hasattr(mw.col.decks, 'current'):
+                    current_deck = mw.col.decks.current()
+                    if current_deck and 'id' in current_deck:
+                        deck_id = current_deck['id']
+            except:
+                pass
+        
+        period = config.get("main_screen_period", "3m")
+        complete_stats = CompleteCollectionStats(mw.col, deck_id, period)
+        graph_html = render_card_evolution_graph(complete_stats)
+        
+        content._body += graph_html # Removed blue box wrapper
+        print("Card Evolution Main Screen: Gráfico COMPLETO adicionado (período: " + period + ", deck: " + str(deck_id) + ")")
+        
+    except Exception as e:
+        print("Card Evolution Main Screen: Erro: " + str(e))
+        import traceback
+        print("Card Evolution Main Screen: Traceback: " + str(traceback.format_exc()))
+
+def init_main_screen_hooks():
+    """Inicializar hooks para injetar gráfico na tela principal."""
+    config = mw.addonManager.getConfig(__name__)
+    
+    # Só registrar hooks se a funcionalidade estiver habilitada
+    if config.get("enable_main_screen", False):
+        overview_will_render_content.append(inject_graph_into_main_screen)
+        deck_browser_will_render_content.append(inject_graph_into_main_screen)
+        print("Card Evolution: Integração com tela principal ativada")
+    else:
+        print("Card Evolution: Integração com tela principal desabilitada (enable_main_screen=False)")
+
+# Inicializar hooks da tela principal
+try:
+    init_main_screen_hooks()
+except Exception as e:
+    print(f"Card Evolution: Erro ao inicializar hooks da tela principal: {e}")
+
+# ===== FIM DA INTEGRAÇÃO COM TELA PRINCIPAL =====

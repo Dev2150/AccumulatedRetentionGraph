@@ -5,6 +5,16 @@
 	"hide_retained": false,
 	"show_at_beginning": false,
 	"exclude_deleted_cards": true,
+	"enable_main_screen": true,
+	"main_screen_period": "3m",
+	"main_screen_aggregation": "d",
+	"main_screen_height": 250,
+	"show_in_overview": true,
+	"show_in_deck_browser": true,
+	"show_no_data_message": true,
+	"_comment_main_screen_period": "Opções: '1m', '3m', '1y', 'deck_life'",
+	"_comment_main_screen_aggregation": "Opções: 'd' (dias) ou 'w' (semanas)",
+	"_comment_aggregation_examples": "Para período '3m' com agregação 'd': mostra dados diários em semanas. Com 'w': dados semanais",
 	"translation_maps": {
 		"en": {
 			"label_retained": "Retained (>84 days)",
