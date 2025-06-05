@@ -300,20 +300,73 @@ def get_card_evolution_data(self_instance):
     # Portanto, podemos usá-las diretamente no tooltip via item.series.label
 
     # Tooltip simplificado SEM F-STRINGS
-    tooltip_html = (
-        '<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:5px;border:1px solid #333;background-color:#f5f5f5;opacity:0.9;color:#000;"></div>'
-        '<script>'
-        '$(function() {'
-        'var tooltip = $("#evolutionGraphTooltip").appendTo("body");'
-        '$("#evolutionGraph").bind("plothover", function (event, pos, item) {'
-        'if (item) {'
-        'var content = "<b>Período: " + item.datapoint[0] + "</b><br/>" + item.series.label + ": " + item.datapoint[1];'
-        'tooltip.html(content).css({top: item.pageY+5, left: item.pageX+5}).fadeIn(200);'
-        '} else { tooltip.hide(); }'
-        '});'
-        '});'
-        '</script>'
-    )
+    tooltip_html = f"""
+<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:5px;border:1px solid #333;background-color:#f5f5f5;opacity:0.9;color:#000;">
+</div>
+<script>
+$(function() {{
+    var tooltip = $("#evolutionGraphTooltip").appendTo("body");
+    $("#evolutionGraph").bind("plothover", function (event, pos, item) {{
+        if (item) {{
+            var x_val_on_axis = item.datapoint[0];
+            var y_val = item.datapoint[1];
+            var seriesLabel = item.series.label; // Já traduzido
+            var totalForDay = 0;
+
+            var plot = $(this).data("plot");
+            var allSeries = plot.getData();
+            var pointData = {{}}; // Usar chaves de série já traduzidas
+
+            for(var i=0; i < allSeries.length; ++i){{
+                 var currentSeries = allSeries[i];
+                 if (!currentSeries.label) continue;
+                for(var j=0; j < currentSeries.data.length; ++j){{
+                    var d = currentSeries.data[j];
+                    if(Math.abs(d[0] - x_val_on_axis) < 0.0001){{
+                         if(!pointData[x_val_on_axis]) pointData[x_val_on_axis] = {{}};
+                         pointData[x_val_on_axis][currentSeries.label] = d[1]; // Usa a label da série como chave
+                         totalForDay += d[1];
+                    }}
+                }}
+            }}
+
+            var xaxes_options = plot.getOptions().xaxes[0];
+            var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
+            var aggregationChunkDaysFromOptions = xaxes_options.aggregation_chunk_days || 1;
+            var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
+            var displayX = x_val_on_axis.toFixed(tickDecimalsFromOptions);
+            var titleX;
+            var today_str = '{tr_today}'; // Passa a string "Hoje" traduzida
+
+            if (aggregationChunkDaysFromOptions === 1 && Math.abs(x_val_on_axis - 0) < 0.0001) {{
+                titleX = today_str;
+            }} else {{
+                titleX = displayX + unitSuffixFromOptions;
+            }}
+
+            var content = "<b>{tr_tooltip_period}" + titleX + "</b><br/>";
+            var labelLearning = "{tr("label_learning")}";
+            var labelYoung = "{tr("label_young")}";
+            var labelMature = "{tr("label_mature")}";
+            var labelRetained = "{tr("label_retained")}";
+
+            if(pointData[x_val_on_axis]){{
+                // Acessar usando as labels traduzidas que foram usadas para criar as séries
+                if(pointData[x_val_on_axis][labelLearning] !== undefined) content += labelLearning + ": " + pointData[x_val_on_axis][labelLearning].toFixed(0) + "<br/>";
+                if(pointData[x_val_on_axis][labelYoung] !== undefined) content += labelYoung + ": " + pointData[x_val_on_axis][labelYoung].toFixed(0) + "<br/>";
+                if(pointData[x_val_on_axis][labelMature] !== undefined) content += labelMature + ": " + pointData[x_val_on_axis][labelMature].toFixed(0) + "<br/>";
+                if(pointData[x_val_on_axis][labelRetained] !== undefined) content += labelRetained + ": " + pointData[x_val_on_axis][labelRetained].toFixed(0) + "<br/>";
+            }}
+            content += "<i>{tr_tooltip_total}" + totalForDay.toFixed(0) + "</i>";
+
+            tooltip.html(content).css({{top: item.pageY+5, left: item.pageX+5}}).fadeIn(200);
+        }} else {{
+            tooltip.hide();
+        }}
+    }});
+}});
+</script>
+"""
     graph_options = {
         "xaxis": {
             "min": xaxis_min, 
@@ -367,7 +420,7 @@ def render_card_evolution_graph(self_instance):
         ylabel=tr("graph_y_label")
         # Nenhum parâmetro xunit aqui
     )
-    # html += tooltip_html # Comentado NOVAMENTE para depurar o problema de "jQuery or Flot not loaded"
+    html += tooltip_html # Comentado NOVAMENTE para depurar o problema de "jQuery or Flot not loaded"
     return html
 
 # --- Nova seção de Hooking --- 
