@@ -692,8 +692,9 @@ def on_overview_render(overview: Overview, content: OverviewContent):
         return
         
     try:
-        # Na visão geral, usamos o deck_id do objeto overview.
-        graph_html = _render_main_screen_graph_html(deck_id=overview.deck_id)
+        # Na visão geral, usamos o deck_id do baralho atual.
+        current_deck_id = mw.col.decks.get_current_id()
+        graph_html = _render_main_screen_graph_html(deck_id=current_deck_id)
         content.table += graph_html
     except Exception as e:
         print(f"Accumulated Retention: Failed to render graph on overview: {e}")
