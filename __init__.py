@@ -65,13 +65,11 @@ def get_card_evolution_data(self_instance):
             anki_suggested_chunk_days = raw_chunk_from_anki[2]
         else:
             # Se get_start_end_chunk não retornar o esperado, recorremos ao tipo.
-            print("Card Evolution DEBUG: get_start_end_chunk() did not return expected tuple: " + str(raw_chunk_from_anki) + ". Falling back to type.")
             if stats_type_from_instance == 0: anki_suggested_chunk_days = 1
             elif stats_type_from_instance == 1: anki_suggested_chunk_days = 7
             else: anki_suggested_chunk_days = 30 # 1y ou all
 
     except (IndexError, AttributeError, TypeError) as e_chunk:
-        print("Card Evolution DEBUG: Error getting chunk via get_start_end_chunk(): " + str(e_chunk) + ". Falling back to type.")
         if stats_type_from_instance == 0: anki_suggested_chunk_days = 1
         elif stats_type_from_instance == 1: anki_suggested_chunk_days = 7
         else: anki_suggested_chunk_days = 30 # 1y ou all
@@ -80,14 +78,12 @@ def get_card_evolution_data(self_instance):
     if is_main_screen:
         config = mw.addonManager.getConfig(__name__)
         aggregation_config = config.get("main_screen_aggregation", "w")
-        print("Card Evolution DEBUG: Main screen aggregation config: " + str(aggregation_config))
         
         if aggregation_config == "d":
             aggregation_chunk_days = 1
         else:  # 'w' ou default
             aggregation_chunk_days = 7
             
-        print("Card Evolution DEBUG: Main screen - forcing aggregation_chunk_days to: " + str(aggregation_chunk_days))
     else:
         # Lógica original para tela de estatísticas
         if stats_type_from_instance == 0: # 1 Mês
@@ -107,13 +103,6 @@ def get_card_evolution_data(self_instance):
     elif aggregation_chunk_days >= 28: # Inclui 30 e outros próximos para "mês"
         unit_suffix = "m"
     
-    print("Card Evolution DEBUG: Stats Type: " + str(stats_type_from_instance))
-    print("Card Evolution DEBUG: Raw period_days from Anki: " + str(period_days))
-    print("Card Evolution DEBUG: Raw chunk from Anki get_start_end_chunk(): " + str(raw_chunk_from_anki))
-    print("Card Evolution DEBUG: Anki suggested chunk_days: " + str(anki_suggested_chunk_days))
-    print("Card Evolution DEBUG: Determined aggregation_chunk_days: " + str(aggregation_chunk_days))
-    print("Card Evolution DEBUG: Determined unit_suffix: " + str(unit_suffix))
-
     end_date_timestamp_ms = day_cutoff_s * 1000
     graph_start_day_idx = 0 
     
@@ -130,11 +119,9 @@ def get_card_evolution_data(self_instance):
             first_rev_query += " WHERE " + " AND ".join(first_rev_query_conditions)
         min_revlog_id_ms = self_instance.col.db.scalar(first_rev_query)
         if not min_revlog_id_ms: # Se não há revisões, retorna dados vazios
-            print("Card Evolution DEBUG: No review log entries found for deck life.")
             return [], {}, ""
         days_ago = (day_cutoff_s - (min_revlog_id_ms / 1000)) // 86400
         graph_start_day_idx = -int(days_ago)
-        print("Card Evolution DEBUG: Deck life - graph_start_day_idx calculated as " + str(graph_start_day_idx))
 
     main_revlog_query_conditions = ["id < " + str(end_date_timestamp_ms)]
     if revlog_deck_tag_filter_sql:
@@ -399,10 +386,6 @@ def render_card_evolution_graph(self_instance):
     series_data, options, tooltip_html = get_card_evolution_data(self_instance)
 
     # Remover prints de depuração
-    # print("Card Evolution Main Screen DEBUG (render_card_evolution_graph):")
-    # print("series_data = " + str(series_data))
-    # print("options = " + str(options))
-
     if not series_data or not any(s['data'] for s in series_data):
         return "<div style='text-align:center;margin-top:1em;'>" + tr("graph_no_data") + "</div>"
 
@@ -420,7 +403,7 @@ def render_card_evolution_graph(self_instance):
         ylabel=tr("graph_y_label")
         # Nenhum parâmetro xunit aqui
     )
-    html += tooltip_html # Comentado NOVAMENTE para depurar o problema de "jQuery or Flot not loaded"
+    html += tooltip_html
     return html
 
 # --- Nova seção de Hooking --- 
@@ -432,10 +415,8 @@ BACKUP_ATTR_NAME = "_cardGraph_original_by_evolution_addon" # Manter nome do bac
 # Guardar uma referência ao método original, se ainda não foi guardada por este addon
 if hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and not hasattr(stats.CollectionStats, BACKUP_ATTR_NAME):
     setattr(stats.CollectionStats, BACKUP_ATTR_NAME, getattr(stats.CollectionStats, TARGET_METHOD_NAME))
-    print(f"Card Evolution: Backed up stats.CollectionStats.{TARGET_METHOD_NAME}")
 elif not hasattr(stats.CollectionStats, TARGET_METHOD_NAME):
-    print(f"Card Evolution Error: stats.CollectionStats has no attribute {TARGET_METHOD_NAME}. Cannot apply hook.")
-    # Aqui poderíamos parar o script ou tentar um nome alternativo se soubéssemos de um
+    pass
 
 def add_evolution_graph_to_card_stats(self_instance, *original_args, **original_kwargs):
     """
@@ -465,15 +446,12 @@ def add_evolution_graph_to_card_stats(self_instance, *original_args, **original_
             original_card_graph_html = original_method_ref(self_instance, *original_args, **cleaned_kwargs)
         except TypeError as e:
             # This might happen if original_args is not empty or cleaned_kwargs still has unexpected items.
-            print(f"Card Evolution: TypeError when calling original cardGraph: {e}. Trying with self_instance only.")
             try:
                 original_card_graph_html = original_method_ref(self_instance)
             except Exception as e2:
-                print(f"Card Evolution: Failed to call original cardGraph even with self_instance only: {e2}")
                 original_card_graph_html = "<!-- Original graph failed to load -->"
 
     else:
-        print(f"Card Evolution Warning: Could not retrieve original method from backup attribute {BACKUP_ATTR_NAME}.")
         original_card_graph_html = "<!-- Original graph could not be determined -->"
     
     evolution_graph_html = render_card_evolution_graph(self_instance)
@@ -496,7 +474,6 @@ if hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and hasattr(stats.Collecti
     # Desfazer o wrap se o método alvo não for já o original (ou seja, se já foi envolvido por nós)
     if current_target_method_func != original_backup_func:
         setattr(stats.CollectionStats, TARGET_METHOD_NAME, original_backup_func)
-        print(f"Card Evolution: Unwrapped {TARGET_METHOD_NAME} before re-wrapping.")
 
     # Aplicar o wrap
     setattr(stats.CollectionStats, TARGET_METHOD_NAME, wrap(
@@ -504,16 +481,14 @@ if hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and hasattr(stats.Collecti
         add_evolution_graph_to_card_stats, 
         "around"
     ))
-    print(f"Card Evolution Addon loaded and wrapped {TARGET_METHOD_NAME} to add evolution stats.")
 else:
     if hasattr(stats.CollectionStats, TARGET_METHOD_NAME):
-        print(f"Card Evolution Warning: Could not wrap {TARGET_METHOD_NAME} because backup was not created.")
-    # A mensagem de erro sobre o método não existente já foi impressa acima.
+        pass
 
 # Manter o print final se o carregamento foi tentado, mesmo que o hook falhe
 # para dar alguma indicação de que o addon foi processado.
 if not (hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and hasattr(stats.CollectionStats, BACKUP_ATTR_NAME)):
-     print(f"Card Evolution Addon was processed but could not apply graph hook to {TARGET_METHOD_NAME}.")
+     pass
 
 # ===== INÍCIO DA INTEGRAÇÃO COM TELA PRINCIPAL =====
 
@@ -576,7 +551,6 @@ def inject_graph_into_main_screen(content, context):
                     deck_ids_str = ids2str(child_decks)
                     return "cid IN (SELECT id FROM cards WHERE did IN " + deck_ids_str + ")"
                 except Exception as e:
-                    print("Card Evolution Main Screen: Erro ao construir filtro de deck: " + str(e))
                     return ""
                     
             def get_start_end_chunk(self):
@@ -667,61 +641,39 @@ def inject_graph_into_main_screen(content, context):
                     js_parts = []
                     js_parts.append('<script type="text/javascript">')
                     js_parts.append('(function() {')
-                    js_parts.append('  console.log("Card Evolution JS: Script execution started.");')
 
                     js_parts.append('  function initPlot() {')
                     # Diagnóstico mais detalhado do que está disponível
-                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: typeof window:", typeof window);')
-                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: typeof $:", typeof $);')
-                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: typeof jQuery:", typeof jQuery);')
-                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: window.$ available:", typeof window.$ !== "undefined");')
-                    js_parts.append('    console.log("Card Evolution JS DIAGNOSTIC: window.jQuery available:", typeof window.jQuery !== "undefined");')
-                    js_parts.append('    if (typeof $ !== "undefined") {')
-                    js_parts.append('      console.log("Card Evolution JS DIAGNOSTIC: $.plot available:", typeof $.plot !== "undefined");')
-                    js_parts.append('      console.log("Card Evolution JS DIAGNOSTIC: $.fn.jquery version:", $.fn.jquery);')
-                    js_parts.append('    }')
-                    
-                    # Check for jQuery first
                     js_parts.append('    if (typeof $ === "undefined") {')
-                    js_parts.append('      console.log("Card Evolution JS: jQuery not available, will retry...");')
                     js_parts.append('      return false;') 
                     js_parts.append('    }')
                     
                     # If jQuery is available but Flot is not, try to load Flot dynamically
                     js_parts.append('    if (typeof $.plot === "undefined") {')
-                    js_parts.append('      console.log("Card Evolution JS: Flot not loaded. Loading from CDN...");')
                     js_parts.append('      var flotScript = document.createElement("script");')
                     js_parts.append('      flotScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js";')
                     js_parts.append('      flotScript.onload = function() {')
-                    js_parts.append('        console.log("Card Evolution JS: Flot loaded from CDN");')
                     js_parts.append('        var stackScript = document.createElement("script");')
                     js_parts.append('        stackScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.min.js";')
                     js_parts.append('        stackScript.onload = function() {')
-                    js_parts.append('          console.log("Card Evolution JS: Stack plugin loaded");')
                     js_parts.append('          setTimeout(function() { initPlot(); }, 100);')
                     js_parts.append('        };')
                     js_parts.append('        stackScript.onerror = function() {')
-                    js_parts.append('          console.log("Card Evolution JS: Stack plugin failed, proceeding anyway");')
                     js_parts.append('          setTimeout(function() { initPlot(); }, 100);')
                     js_parts.append('        };')
                     js_parts.append('        document.head.appendChild(stackScript);')
                     js_parts.append('      };')
                     js_parts.append('      flotScript.onerror = function() {')
-                    js_parts.append('        console.error("Card Evolution JS: Failed to load Flot from CDN");')
                     js_parts.append('      };')
                     js_parts.append('      document.head.appendChild(flotScript);')
                     js_parts.append('      return false;')
                     js_parts.append('    }')
                     
-                    js_parts.append('    console.log("Card Evolution JS: jQuery and Flot found. Initializing plot.");')
-
                     js_parts.append('    $(function() {') # DOM ready
-                    js_parts.append('      console.log("Card Evolution JS: DOM ready function executed.");')
                     js_parts.append('      setTimeout(function() {') # Adicionar setTimeout
-                    js_parts.append('        console.log("Card Evolution JS: setTimeout callback executed.");')
                     js_parts.append('        try {')
                     js_parts.append('          var graphDiv = $("#' + id + '");')
-                    js_parts.append('          if (graphDiv.length === 0) { console.error("Card Evolution JS: Graph div NOT FOUND! ID: ' + id + '"); return; }')
+                    js_parts.append('          if (graphDiv.length === 0) { return; }')
                     
                     js_parts.append('          var data = ' + data_json_for_js + ';')
                     js_parts.append('          var options = ' + options_json_for_js + ';')
@@ -746,12 +698,9 @@ def inject_graph_into_main_screen(content, context):
 
                     js_parts.append('          $.plot(graphDiv, data, options);')
                     js_parts.append('        } catch (e) {')
-                    js_parts.append('          console.error("Card Evolution Main Screen Plot JS Error (in setTimeout):", e);')
                     js_parts.append('          var currentData, currentOptions;')
                     js_parts.append('          try { currentData = JSON.stringify(data); } catch (jsonErr) { currentData = "Error stringifying data"; }')
                     js_parts.append('          try { currentOptions = JSON.stringify(options); } catch (jsonErr) { currentOptions = "Error stringifying options"; }')
-                    js_parts.append('          console.error("Data at time of error (in setTimeout):", currentData);')
-                    js_parts.append('          console.error("Options at time of error (in setTimeout):", currentOptions);')
                     js_parts.append('        }')
                     js_parts.append('      }, 50);') # Fim do setTimeout, com delay de 50ms
                     js_parts.append('    });') # End DOM ready
@@ -763,9 +712,7 @@ def inject_graph_into_main_screen(content, context):
                     js_parts.append('  function tryInit() {')
                     js_parts.append('    attempts++;')
                     js_parts.append('    if (initPlot()) {')
-                    js_parts.append('      console.log("Card Evolution JS: Plot initialized successfully or init scheduled.");')
                     js_parts.append('    } else if (attempts < 10) {') # Try for approx 2 seconds (10 * 200ms)
-                    js_parts.append('      console.log("Card Evolution JS: Retrying plot initialization, attempt: " + attempts);')
                     js_parts.append('      setTimeout(tryInit, 200);')
                     js_parts.append('    } else {')
                     js_parts.append('      console.error("Card Evolution JS: Failed to initialize plot. jQuery or Flot may not be loaded.");')
@@ -801,7 +748,6 @@ def inject_graph_into_main_screen(content, context):
         graph_html = render_card_evolution_graph(complete_stats)
         
         content._body += graph_html # Removed blue box wrapper
-        print("Card Evolution Main Screen: Gráfico COMPLETO adicionado (período: " + period + ", deck: " + str(deck_id) + ")")
         
     except Exception as e:
         print("Card Evolution Main Screen: Erro: " + str(e))
@@ -816,9 +762,8 @@ def init_main_screen_hooks():
     if config.get("enable_main_screen", False):
         overview_will_render_content.append(inject_graph_into_main_screen)
         deck_browser_will_render_content.append(inject_graph_into_main_screen)
-        print("Card Evolution: Integração com tela principal ativada")
     else:
-        print("Card Evolution: Integração com tela principal desabilitada (enable_main_screen=False)")
+        pass
 
 # Inicializar hooks da tela principal
 try:
