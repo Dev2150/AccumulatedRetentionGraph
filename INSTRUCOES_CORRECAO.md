@@ -79,3 +79,16 @@ def render_card_evolution_graph(self_instance):
 - O gráfico tem aparência 100% idêntica e integrada em ambas as telas
 - A interface ficou mais limpa e consistente
 - A legenda tem sempre o mesmo fundo semi-transparente, independente da tela 
+---
+
+#### 4. Correção Adicional: Restauração do Tooltip Detalhado
+
+-   **Problema Identificado:** Durante as refatorações para padronizar as telas, o script do tooltip (a caixa de informações que aparece ao passar o mouse sobre o gráfico) foi acidentalmente substituído por uma versão excessivamente simples. A funcionalidade que exibia o detalhamento de cartões por categoria (Retidos, Maduros, Jovens, etc.) para cada ponto no tempo foi perdida.
+
+-   **Solução Implementada:**
+    -   **Localização:** Função `get_card_evolution_data`
+    -   **Modificação:** O script original e detalhado do tooltip foi restaurado. Este script mais complexo itera sobre todas as séries de dados do gráfico para um ponto específico no tempo, coletando e exibindo a contagem para cada categoria individualmente, além do total.
+    -   Também foram adicionadas variáveis para passar todas as strings de tradução necessárias do Python para o JavaScript, garantindo que o tooltip funcione corretamente em diferentes idiomas.
+
+-   **Resultado:**
+    -   O tooltip voltou a exibir o resumo completo e detalhado, mostrando a contagem de cartões para cada estágio de aprendizado ao passar o mouse sobre o gráfico, como era a intenção original. 

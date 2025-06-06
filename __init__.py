@@ -397,14 +397,27 @@ def render_card_evolution_graph(self_instance):
     # O método _title geralmente lida com a tradução se as strings forem chaves de tradução.
     # Nossas strings title e subtitle são literais em português.
     html = self_instance._title(title, subtitle)
-    html += self_instance._graph(
-        id=graph_id,
-        data=series_data,
-        conf=options, # options contém nosso tickFormatter detalhado
-        ylabel=tr("graph_y_label")
-        # Nenhum parâmetro xunit aqui
-    )
-    html += tooltip_html
+
+    # A lógica de renderização agora depende do tipo de instância de estatísticas
+    if isinstance(self_instance, CompleteCollectionStats):
+        # Para a tela principal, passamos o tooltip_html para ser integrado pelo método _graph customizado
+        html += self_instance._graph(
+            id=graph_id,
+            data=series_data,
+            conf=options,
+            ylabel=tr("graph_y_label"),
+            tooltip_html=tooltip_html
+        )
+    else:
+        # Para a tela de estatísticas padrão, usamos o método original e anexamos o script do tooltip
+        html += self_instance._graph(
+            id=graph_id,
+            data=series_data,
+            conf=options,
+            ylabel=tr("graph_y_label")
+        )
+        html += tooltip_html
+        
     return html
 
 # --- Nova seção de Hooking --- 
@@ -592,11 +605,22 @@ class CompleteCollectionStats:
             html_parts.append('</p>')
         return ''.join(html_parts)
         
-    def _graph(self, id, data, conf, ylabel=""):
+    def _graph(self, id, data, conf, ylabel="", tooltip_html=""):
         config = mw.addonManager.getConfig(__name__)
         height = config.get("main_screen_height", 250)
         safe_ylabel = ylabel.replace('%', '%%')
         
+        # Extrai o conteúdo JS puro do tooltip_html
+        tooltip_js_content = ""
+        if tooltip_html:
+            match = re.search(r'<script[^>]*>(.*?)</script>', tooltip_html, re.DOTALL)
+            if match:
+                tooltip_js_content = match.group(1).strip()
+                # Remove a função de auto-execução $(function() { ... }); para que possamos chamá-la diretamente
+                tooltip_js_content = re.sub(r'^\s*\$\(function\(\)\s*\{', '', tooltip_js_content)
+                tooltip_js_content = re.sub(r'\}\s*\)\;\s*$', '', tooltip_js_content)
+
+
         try:
             if not data or not any(s.get('data') for s in data):
                 return '<div style="color:#888;text-align:center;margin:1em 0;">Sem dados para mostrar</div>'
@@ -642,6 +666,8 @@ class CompleteCollectionStats:
             js_parts.append('          if (options.series) { options.series.stack = true; if (options.series.bars) { options.series.bars.show = true; } else { options.series.bars = { show: true }; } } else { options.series = { stack: true, bars: { show: true } }; }')
             js_parts.append('          options.xaxis.tickFormatter = function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var aggDays = ' + str(py_agg_days) + '; var todayLabel = \'' + py_today_label + '\'; if (aggDays === 1 && Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; };')
             js_parts.append('          $.plot(graphDiv, data, options);')
+            # Injeta a lógica do tooltip aqui, para garantir que execute após o plot
+            js_parts.append('          ' + tooltip_js_content)
             js_parts.append('        } catch (e) { console.error("Card Evolution Main Screen Plot JS Error (in setTimeout):", e); }')
             js_parts.append('      }, 50);')
             js_parts.append('    });')
