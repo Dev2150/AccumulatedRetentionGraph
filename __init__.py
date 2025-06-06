@@ -673,35 +673,37 @@ def _render_main_screen_graph_html(deck_id=None):
     return f'<div class="evolution-graph-main-wrapper" style="max-width: 900px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
 
 def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserContent):
-    """Adiciona o gráfico na tela de listagem de baralhos (sem filtro de deck específico)."""
+    """Adiciona o gráfico de evolução do status à tela principal do navegador de baralhos."""
     config = mw.addonManager.getConfig(__name__)
-    if not config.get("enable_main_screen", False) or not config.get("show_in_deck_browser", True):
+    if not config.get("show_on_main_screen", True):
         return
-
+        
     try:
-        # Para a tela principal (deck browser), deck_id é None para mostrar todos os decks.
+        # Para o navegador de baralhos, não filtramos por deck_id (None)
         graph_html = _render_main_screen_graph_html(deck_id=None)
         content.stats += graph_html
     except Exception as e:
         print(f"Accumulated Retention: Failed to render graph on deck browser: {e}")
 
 def on_overview_render(overview: Overview, content: OverviewContent):
-    """Adiciona o gráfico na tela de visão geral de um deck específico."""
+    """Adiciona o gráfico de evolução do status à tela de visão geral do baralho."""
     config = mw.addonManager.getConfig(__name__)
-    if not config.get("enable_main_screen", False) or not config.get("show_in_overview", True):
+    if not config.get("show_on_overview", True):
         return
-        
+
     try:
-        # Na visão geral, usamos o deck_id do baralho atual.
+        # Para a visão geral, usamos o ID do baralho atual, obtido via mw.
         current_deck_id = mw.col.decks.get_current_id()
         graph_html = _render_main_screen_graph_html(deck_id=current_deck_id)
+        
+        # Injetar o gráfico. Para versões mais antigas do Anki, usamos content.table.
         content.table += graph_html
+        
     except Exception as e:
         print(f"Accumulated Retention: Failed to render graph on overview: {e}")
 
-
 def init_main_screen_hooks():
-    """Inicializar hooks para injetar gráfico na tela principal."""
+    """Inicializa os ganchos para a tela principal (Navegador de Baralhos)."""
     config = mw.addonManager.getConfig(__name__)
     if config.get("enable_main_screen", False):
         # A verificação de show_in_overview/deck_browser é feita dentro de cada hook.
