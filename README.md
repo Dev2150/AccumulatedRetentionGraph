@@ -10,6 +10,14 @@
   <img src="https://i.ibb.co/1JPsLqjM/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
+<p align="center">
+  <img src="https://i.ibb.co/8Dkws9kr/image.png" alt="Additional Screenshot 1">
+</p>
+
+<p align="center">
+  <img src="https://i.ibb.co/JRwpbCn8/image.png" alt="Additional Screenshot 2">
+</p>
+
 ## **English**
 
 ### What is Accumulated Retention Graph?
@@ -86,17 +94,9 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 
 ## **Configuration**
 
-See `config.md` for detailed configuration options including:
-- Statistics screen display options
-- Main screen integration settings  
-- Card state visibility controls
-- Date format preferences
-
-Para opções de configuração detalhadas, consulte `config.md`, incluindo:
-- Opções de exibição da tela de estatísticas
-- Configurações de integração da tela principal
-- Controles de visibilidade dos estados dos cartões
-- Preferências de formato de data
+<p align="center">
+  <img src="https://i.ibb.co/ymZ6pbBr/image.png" alt="Configuration">
+</p>
 
 ---
 
