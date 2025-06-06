@@ -79,8 +79,6 @@ def tr(key: str, **kwargs: Any) -> str:
     """Traduz uma chave para o idioma atual usando os mapas do config.json."""
     lang_code = get_language_code()
     
-
-    
     config = mw.addonManager.getConfig(__package__)
     if not config:
         return key
@@ -89,17 +87,12 @@ def tr(key: str, **kwargs: Any) -> str:
     if not translation_maps or not isinstance(translation_maps, dict):
         return key
 
-    # Log dos termos encontrados na primeira chamada
-    if not hasattr(tr, "_logged_terms"):
-        tr._logged_terms = True
-
     default_lang_map = translation_maps.get(DEFAULT_LANG, {})
     current_lang_map = translation_maps.get(lang_code, default_lang_map)
     
     text_template = current_lang_map.get(key)
-    found_in_current = text_template is not None
 
-    if not found_in_current and lang_code != DEFAULT_LANG:
+    if text_template is None and lang_code != DEFAULT_LANG:
         text_template = default_lang_map.get(key)
     
     if text_template is None:
@@ -112,15 +105,4 @@ def tr(key: str, **kwargs: Any) -> str:
     except Exception as e:
         return key
 
-# Add a way to allow dynamic updates if Anki language changes during session
-# This is a simplified version. A more robust solution might involve hooks.
-def _update_translation_lang_if_needed():
-    # This function could be called periodically or on certain events
-    # to re-check mw.pm.meta if it\'s available.
-    # For now, get_language_code handles fallback if mw isn\'t ready.
-    pass
-
-if mw and hasattr(mw, "form") and hasattr(mw.form, "menuCol"):
-    # Example: try to refresh lang if some major UI part is available.
-    # This is just a conceptual placeholder for a better trigger.
-    pass 
+ 

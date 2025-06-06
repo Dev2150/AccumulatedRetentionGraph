@@ -3,7 +3,7 @@ from anki.hooks import wrap
 from anki.utils import ids2str
 from aqt import mw
 from .translations import tr # Adicionado para tradução
-# import anki.pylib.text as text # This module seems to no longer exist or be needed here
+
 import time
 import math # Adicionado para math.floor
 import json
@@ -530,14 +530,7 @@ if hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and hasattr(stats.Collecti
         add_evolution_graph_to_card_stats, 
         "around"
     ))
-else:
-    if hasattr(stats.CollectionStats, TARGET_METHOD_NAME):
-        pass
 
-# Manter o print final se o carregamento foi tentado, mesmo que o hook falhe
-# para dar alguma indicação de que o addon foi processado.
-if not (hasattr(stats.CollectionStats, TARGET_METHOD_NAME) and hasattr(stats.CollectionStats, BACKUP_ATTR_NAME)):
-     pass
 
 # ===== INÍCIO DA INTEGRAÇÃO COM TELA PRINCIPAL =====
 
@@ -585,7 +578,6 @@ class CompleteCollectionStats:
             return None
         else:
             # Tenta interpretar como Xm (X meses) ou Xy (X anos)
-            import re
             match = re.match(r'^(\d+)([my])$', self._period)
             if match:
                 number, unit = int(match.group(1)), match.group(2)
