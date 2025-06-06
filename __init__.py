@@ -698,16 +698,14 @@ class CompleteCollectionStats:
             js_parts.append('    if (typeof $.plot === "undefined") {')
             js_parts.append('      var flotScript = document.createElement("script");')
             js_parts.append('      flotScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js";')
-            js_parts.append('      flotScript.timeout = 3000;')  # Timeout de 3s
             js_parts.append('      flotScript.onload = function() {')
             js_parts.append('        var stackScript = document.createElement("script");')
             js_parts.append('        stackScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.min.js";')
-            js_parts.append('        stackScript.timeout = 3000;')  # Timeout de 3s
-            js_parts.append('        stackScript.onload = function() { setTimeout(function() { initPlot(); }, 80); };')
-            js_parts.append('        stackScript.onerror = function() { console.log("Card Evolution: No internet or Flot unavailable, skipping external libs"); };')
+            js_parts.append('        stackScript.onload = function() { setTimeout(function() { initPlot(); }, 100); };')
+            js_parts.append('        stackScript.onerror = function() { setTimeout(function() { initPlot(); }, 100); };')
             js_parts.append('        document.head.appendChild(stackScript);')
             js_parts.append('      };')
-            js_parts.append('      flotScript.onerror = function() { console.log("Card Evolution: No internet or Flot unavailable, skipping external libs"); };')
+            js_parts.append('      flotScript.onerror = function() { console.error("Card Evolution JS: Failed to load Flot from CDN"); };')
             js_parts.append('      document.head.appendChild(flotScript);')
             js_parts.append('      return false;')
             js_parts.append('    }')
@@ -715,8 +713,7 @@ class CompleteCollectionStats:
             js_parts.append('      setTimeout(function() {')
             js_parts.append('        try {')
             js_parts.append('          var graphDiv = $("#' + id + '");')
-            js_parts.append('          if (graphDiv.length === 0) { console.log("Graph div not found, retrying..."); return; }')
-            js_parts.append('          if (!graphDiv.is(":visible")) { console.log("Graph div not visible, retrying..."); return; }')
+            js_parts.append('          if (graphDiv.length === 0) { return; }')
             js_parts.append('          var data = ' + data_json_for_js + ';')
             js_parts.append('          var options = ' + options_json_for_js + ';')
             js_parts.append('          if (options.xaxis && typeof options.xaxis.tickFormatter === "string") { delete options.xaxis.tickFormatter; }')
@@ -742,13 +739,13 @@ class CompleteCollectionStats:
             # Injeta a lógica do tooltip aqui, para garantir que execute após o plot
             js_parts.append('          ' + tooltip_js_content)
             js_parts.append('        } catch (e) { console.error("Card Evolution Main Screen Plot JS Error (in setTimeout):", e); }')
-            js_parts.append('      }, 30);')
+            js_parts.append('      }, 50);')
             js_parts.append('    });')
             js_parts.append('    return true;')
             js_parts.append('  }')
             js_parts.append('  var attempts = 0;')
-            js_parts.append('  function tryInit() { attempts++; if (initPlot()) { } else if (attempts < 20) { setTimeout(tryInit, 200); } else { console.error("Card Evolution JS: Failed to initialize plot. jQuery or Flot may not be loaded."); } }')
-            js_parts.append('  if (document.readyState === "complete") { tryInit(); } else { window.addEventListener("load", tryInit); }')
+            js_parts.append('  function tryInit() { attempts++; if (initPlot()) { } else if (attempts < 10) { setTimeout(tryInit, 200); } else { console.error("Card Evolution JS: Failed to initialize plot. jQuery or Flot may not be loaded."); } }')
+            js_parts.append('  tryInit();')
             js_parts.append('})();')
             js_parts.append('</script>')
             
@@ -760,102 +757,46 @@ class CompleteCollectionStats:
             print("Card Evolution Main Screen: Traceback (Python): " + str(traceback.format_exc()))
             return '<div style="color:red;text-align:center;">Erro Py ao gerar gráfico: ' + str(e) + '</div>'
 
-def _refresh_graph_after_delay():
-    """Força um refresh dos gráficos após delay para resolver problemas de renderização."""
-    try:
-        from aqt.qt import QTimer
-        def do_refresh():
-            try:
-                # Força re-renderização via JavaScript
-                script = """
-                setTimeout(function() {
-                    try {
-                        $('[id*="evolutionGraph"]').each(function() {
-                            var plot = $(this).data('plot');
-                            if (plot) {
-                                plot.resize();
-                                plot.draw();
-                            }
-                        });
-                    } catch(e) {
-                        console.log('Graph refresh error:', e);
-                    }
-                }, 100);
-                """
-                if hasattr(mw, 'web') and mw.web and hasattr(mw.web, 'eval'):
-                    mw.web.eval(script)
-            except Exception as e:
-                pass  # Silencia erros de refresh - não são críticos
-        
-        QTimer.singleShot(800, do_refresh)  # Delay de 0.8s após carregamento
-    except Exception as e:
-        pass  # Silencia erros de setup - não são críticos
-
 def _render_main_screen_graph_html(deck_id=None):
     """Gera o HTML completo para o gráfico da tela principal."""
-    try:
-        # Progress indicator com proteção para versões diferentes do Anki
-        try:
-            if hasattr(mw.progress, 'busy') and callable(mw.progress.busy):
-                mw.progress.busy()
-        except:
-            pass  # Ignora erros de progress
-        
-        config = mw.addonManager.getConfig(__name__)
-        period = config.get("main_screen_period")
-        stats_instance = CompleteCollectionStats(mw.col, deck_id=deck_id, period=period)
-        
-        graph_html = render_card_evolution_graph(stats_instance)
-        
-        # Envolve o gráfico renderizado em um contêiner pai, agora com estilo.
-        return f'<div class="evolution-graph-main-wrapper" style="max-width: 900px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
-    finally:
-        # Progress finish com proteção
-        try:
-            if hasattr(mw.progress, 'finish') and callable(mw.progress.finish):
-                mw.progress.finish()
-        except:
-            pass  # Ignora erros de progress
+    config = mw.addonManager.getConfig(__name__)
+    period = config.get("main_screen_period")
+    stats_instance = CompleteCollectionStats(mw.col, deck_id=deck_id, period=period)
+    
+    graph_html = render_card_evolution_graph(stats_instance)
+    
+    # Envolve o gráfico renderizado em um contêiner pai, agora com estilo.
+    return f'<div class="evolution-graph-main-wrapper" style="max-width: 900px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
 
 def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserContent):
     """Adiciona o gráfico de evolução do status à tela principal do navegador de baralhos."""
+    config = mw.addonManager.getConfig(__name__)
+    if not config.get("show_in_deck_browser"):
+        return
+        
     try:
-        config = mw.addonManager.getConfig(__name__)
-        if not config.get("show_in_deck_browser"):
-            return
-            
         # Para o navegador de baralhos, não filtramos por deck_id (None)
         graph_html = _render_main_screen_graph_html(deck_id=None)
-        if graph_html:
-            content.stats += graph_html
-            _refresh_graph_after_delay()  # Força refresh após delay
+        content.stats += graph_html
     except Exception as e:
-        import traceback
         print(f"Accumulated Retention: Failed to render graph on deck browser: {e}")
-        print(f"Accumulated Retention: Traceback: {traceback.format_exc()}")
-        # Não re-raise o erro para não quebrar o Anki
 
 def on_overview_render(overview: Overview, content: OverviewContent):
     """Adiciona o gráfico de evolução do status à tela de visão geral do baralho."""
-    try:
-        config = mw.addonManager.getConfig(__name__)
-        if not config.get("show_in_overview"):
-            return
+    config = mw.addonManager.getConfig(__name__)
+    if not config.get("show_in_overview"):
+        return
 
+    try:
         # Para a visão geral, usamos o ID do baralho atual, obtido via mw.
         current_deck_id = mw.col.decks.get_current_id()
         graph_html = _render_main_screen_graph_html(deck_id=current_deck_id)
         
-        if graph_html:
-            # Injetar o gráfico, envolvendo-o em uma linha de tabela para renderização correta.
-            content.table += f'<tr><td colspan="2" style="padding: 10px 0;">{graph_html}</td></tr>'
-            _refresh_graph_after_delay()  # Força refresh após delay
+        # Injetar o gráfico, envolvendo-o em uma linha de tabela para renderização correta.
+        content.table += f'<tr><td colspan="2" style="padding: 10px 0;">{graph_html}</td></tr>'
         
     except Exception as e:
-        import traceback
         print(f"Accumulated Retention: Failed to render graph on overview: {e}")
-        print(f"Accumulated Retention: Traceback: {traceback.format_exc()}")
-        # Não re-raise o erro para não quebrar o Anki
 
 def init_main_screen_hooks():
     """Inicializa os ganchos para a tela principal (Navegador de Baralhos)."""
