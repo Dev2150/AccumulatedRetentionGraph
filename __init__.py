@@ -612,11 +612,11 @@ class CompleteCollectionStats:
         safe_subtitle = subtitle.replace('%', '%%')
 
         html_parts = []
-        html_parts.append('<h3 style="text-align: center; margin-bottom: 0.1em; color: #333;">')
+        html_parts.append('<h3 style="text-align: center; margin-bottom: 0; color: #333;">')
         html_parts.append(safe_title)
         html_parts.append('</h3>')
         if safe_subtitle:
-            html_parts.append('<p style="text-align: center; color: #666; margin-bottom: 1em; font-size: 0.9em;">')
+            html_parts.append('<p style="text-align: center; color: #666; margin-top: 0.2em; margin-bottom: 0.5em; font-size: 0.9em;">')
             html_parts.append(safe_subtitle)
             html_parts.append('</p>')
         return ''.join(html_parts)
