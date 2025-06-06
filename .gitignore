@@ -1,6 +1,6 @@
 # Ignora arquivos e pastas de cache do Python
 __pycache__/
-993120073/
+MemoryMosaic/
 *.pyc
 *.pyo
 
