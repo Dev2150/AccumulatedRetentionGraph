@@ -25,6 +25,7 @@ INTERVAL_LEARNING_MAX = 7
 INTERVAL_YOUNG_MAX = 21
 INTERVAL_MATURE_MAX = 84
 
+
 def get_card_category(revlog_type, last_interval_days):
     if revlog_type in (0, 2, 3): # Learn, Relearn, Cram
         return CAT_LEARNING
@@ -262,21 +263,14 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     tr_today = tr("label_today")
     use_absolute_dates = config.get("use_absolute_dates", True)
 
-    # Obter o locale correto baseado no idioma detectado
-    from .translations import get_language_code
-    detected_lang = get_language_code()
+    # Criar mapeamento de meses traduzidos para JavaScript
+    month_translations = []
+    for i in range(1, 13):
+        month_key = ["month_jan", "month_feb", "month_mar", "month_apr", "month_may", "month_jun",
+                     "month_jul", "month_aug", "month_sep", "month_oct", "month_nov", "month_dec"][i-1]
+        month_translations.append(tr(month_key))
     
-    # Mapear códigos de idioma para locales JavaScript
-    locale_map = {
-        "en": "en-US",
-        "pt": "pt-BR", 
-        "pt_BR": "pt-BR",
-        "es": "es-ES",
-        "fr": "fr-FR",
-        "de": "de-DE",
-        "it": "it-IT"
-    }
-    js_locale = locale_map.get(detected_lang, "en-US")
+    months_js_array = '["' + '", "'.join(month_translations) + '"]'
 
     if use_absolute_dates:
         day_cutoff_for_js = day_cutoff_s
@@ -287,7 +281,8 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
             "    var dayCutoffS = " + str(day_cutoff_for_js) + ";\n" +
             "    var dayOffset = val * aggChunkDays;\n" +
             "    var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);\n" +
-            "    return date.toLocaleDateString('" + js_locale + "', { month: 'short', day: 'numeric' });\n" +
+            "    var months = " + months_js_array + ";\n" +
+            "    return months[date.getMonth()] + ' ' + date.getDate();\n" +
             "}"
         )
     else:
@@ -360,7 +355,8 @@ $(function() {{
                 var dayCutoffS = {day_cutoff_s};
                 var dayOffset = x_val_on_axis * aggregationChunkDaysFromOptions;
                 var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);
-                titleX = date.toLocaleDateString('{js_locale}', {{ month: 'short', day: 'numeric' }});
+                var months = {months_js_array};
+                titleX = months[date.getMonth()] + ' ' + date.getDate();
             }} else {{
                 var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
                 var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
@@ -712,17 +708,16 @@ class CompleteCollectionStats:
             
             use_absolute_dates = config.get("use_absolute_dates", True)
             
-            # Obter locale correto para formatação de datas
-            from .translations import get_language_code
-            detected_lang = get_language_code()
-            locale_map = {
-                "en": "en-US", "pt": "pt-BR", "pt_BR": "pt-BR", "es": "es-ES",
-                "fr": "fr-FR", "de": "de-DE", "it": "it-IT"
-            }
-            js_locale = locale_map.get(detected_lang, "en-US")
+            # Criar array de meses traduzidos para JavaScript
+            month_translations_main = []
+            for i in range(1, 13):
+                month_key = ["month_jan", "month_feb", "month_mar", "month_apr", "month_may", "month_jun",
+                             "month_jul", "month_aug", "month_sep", "month_oct", "month_nov", "month_dec"][i-1]
+                month_translations_main.append(tr(month_key))
+            months_js_array_main = '["' + '", "'.join(month_translations_main) + '"]'
             
             if use_absolute_dates:
-                formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(py_agg_days) + '; var dayCutoffS = ' + str(py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); return date.toLocaleDateString(\'' + js_locale + '\', { month: \'short\', day: \'numeric\' }); }'
+                formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(py_agg_days) + '; var dayCutoffS = ' + str(py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); var months = ' + months_js_array_main + '; return months[date.getMonth()] + \' \' + date.getDate(); }'
             else:
                 formatter_func_str = 'function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; }'
             
