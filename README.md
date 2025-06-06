@@ -27,12 +27,13 @@ Accumulated Retention Graph is an Anki addon that provides a visual representati
     - **Dark Green (Mature):** Cards with intervals greater than 21 days and up to 84 days.
     - **Light Green (Young):** Cards with intervals greater than 7 days and up to 21 days.
     - **Orange (Learning):** Cards with intervals up to 7 days, or currently in learning/relearning phases.
-- **Time Aggregation:** Data is aggregated by day, week, or month depending on the selected statistics period, making the graph easy to read.
+- **Time Aggregation:** Data is aggregated by day, week, or month. The x-axis displays clear, absolute dates (e.g., "Oct 24") instead of relative ones, making the graph easy to read.
 - **Interactivity:**
     - Hover over a bar segment to see a detailed tooltip with counts for each category and the total for that specific period.
 - **Customization:**
     - Choose to show or hide specific card states (Learning, Young, Mature, Retained) via the addon's configuration.
     - Option to display the evolution graph at the beginning or end of the standard card stats.
+    - Toggle between absolute dates (e.g., "Oct 24") and relative days (e.g., "-2d") for the x-axis display.
 
 ### Main benefits
 
@@ -56,12 +57,13 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
     - **Verde Escuro (Maduro):** Cartões com intervalos superiores a 21 dias e até 84 dias.
     - **Verde Claro (Jovem):** Cartões com intervalos superiores a 7 dias e até 21 dias.
     - **Laranja (Aprendendo):** Cartões com intervalos de até 7 dias, ou atualmente nas fases de aprendizado/reaprendizado.
-- **Agregação de Tempo:** Os dados são agregados por dia, semana ou mês, dependendo do período estatístico selecionado, tornando o gráfico fácil de ler.
+- **Agregação de Tempo:** Os dados são agregados por dia, semana ou mês. O eixo x exibe datas absolutas e claras (ex: "24 de out") em vez de dias relativos, tornando o gráfico fácil de ler.
 - **Interatividade:**
     - Passe o mouse sobre um segmento da barra para ver uma dica de ferramenta detalhada com as contagens para cada categoria e o total para aquele período específico.
 - **Customização:**
     - Escolha mostrar ou ocultar estados específicos dos cartões (Aprendendo, Jovem, Maduro, Retido) através da configuração do addon.
     - Opção para exibir o gráfico de evolução no início ou no final das estatísticas padrão dos cartões.
+    - Alterne entre datas absolutas (ex: "24 de out") e dias relativos (ex: "-2d") para a exibição no eixo x.
 
 ### Principais benefícios
 
@@ -76,6 +78,14 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 - For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues) (Note: This is a placeholder URL, please update it with your actual repository URL).
 
 ## **Changelog**
+
+- **v1.3 - 2025-06-05 - UI/UX Improvements & Absolute Dates**
+    - The graph's x-axis and tooltips now display absolute dates (e.g., "Oct 24") by default for better readability, instead of relative days (e.g., "-2d").
+    - Added a new configuration option, `use_absolute_dates` (default: `true`), to allow switching back to the relative day display.
+    - Standardized the "Today" label across all graph views.
+    - Improved tooltip and legend rendering to prevent visual glitches and ensure consistency.
+    - Adjusted title and subtitle spacing for a more compact layout.
+    - Fixed an issue where the graph's container border would not appear in the deck overview screen.
 
 - **v1.2 - 2025-06-04 - Automatic Translation System**
     - Complete overhaul of the translation system with automatic language detection

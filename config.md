@@ -9,6 +9,7 @@ You can customize the addon's behavior by editing the `config.json` file within 
 -   `hide_retained` (boolean): If `true`, the "Retained" section is not shown. Default: `false`.
 -   `show_at_beginning` (boolean): If `true`, the evolution graph will be displayed *before* Anki's default card statistics graph (on the statistics screen). If `false`, it will be displayed *after*. Default: `false`.
 -   `exclude_deleted_cards` (boolean): If `true`, reviews from cards that were later deleted are excluded from the graph. Default: `true`.
+-   `use_absolute_dates` (boolean): If `true`, the graph's x-axis will show absolute dates (e.g., "Oct 24") instead of relative days (e.g., "-2d"). Default: `true`.
 
 #### Main Screen Options (NEW!)
 -   `enable_main_screen` (boolean): If `true`, enables the graph on Anki's main screen (overview and deck browser). Default: `false`.
@@ -31,6 +32,7 @@ Você pode customizar o comportamento do addon editando o arquivo `config.json` 
 -   `hide_retained` (booleano): Se `true`, a seção "Retido" não é mostrada. Padrão: `false`.
 -   `show_at_beginning` (booleano): Se `true`, o gráfico de evolução será exibido *antes* do gráfico de estatísticas padrão do Anki (na tela de estatísticas). Se `false`, será exibido *depois*. Padrão: `false`.
 -   `exclude_deleted_cards` (booleano): Se `true`, revisões de cartões que foram posteriormente deletados são excluídas do gráfico. Padrão: `true`.
+-   `use_absolute_dates` (booleano): Se `true`, o eixo x do gráfico mostrará datas absolutas (ex: "24 de out") em vez de dias relativos (ex: "-2d"). Padrão: `true`.
 
 #### Opções da Tela Principal (NOVO!)
 -   `enable_main_screen` (booleano): Se `true`, habilita o gráfico na tela principal do Anki (visão geral e navegador de decks). Padrão: `false`.
