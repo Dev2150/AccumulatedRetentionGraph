@@ -56,7 +56,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     if is_main_screen:
         # Lógica para tela principal (mantém a configuração do addon)
         config = mw.addonManager.getConfig(__name__)
-        aggregation_config = config.get("main_screen_aggregation", "w")
+        aggregation_config = config.get("main_screen_aggregation")
         
         if aggregation_config == "d":
             aggregation_chunk_days = 1
@@ -120,7 +120,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
         main_revlog_query_conditions.append(revlog_deck_tag_filter_sql)
 
     config = mw.addonManager.getConfig(__name__)
-    exclude_deleted = config.get("exclude_deleted_cards", True) # Padrão True se não encontrado
+    exclude_deleted = config.get("exclude_deleted_cards") # Padrão True se não encontrado
 
     if exclude_deleted:
         main_revlog_query_conditions.append("cid IN (SELECT id FROM cards)")
@@ -261,7 +261,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     
     # Construir o tickFormatter dinamicamente
     tr_today = tr("label_today")
-    use_absolute_dates = config.get("use_absolute_dates", True)
+    use_absolute_dates = config.get("use_absolute_dates")
 
     # Criar mapeamento de meses traduzidos para JavaScript
     month_translations = []
@@ -615,7 +615,7 @@ class CompleteCollectionStats:
         except AttributeError:
             day_cutoff_s = int(time.time())
         
-        aggregation_config = config.get("main_screen_aggregation", "w")
+        aggregation_config = config.get("main_screen_aggregation")
         
         if aggregation_config == "d":
             chunk_days = 1
@@ -663,7 +663,7 @@ class CompleteCollectionStats:
         
     def _graph(self, id, data, conf, ylabel="", tooltip_html=""):
         config = mw.addonManager.getConfig(__name__)
-        height = config.get("main_screen_height", 250)
+        height = config.get("main_screen_height")
         safe_ylabel = ylabel.replace('%', '%%')
         
         # Extrai o conteúdo JS puro do tooltip_html
@@ -727,7 +727,7 @@ class CompleteCollectionStats:
             js_parts.append('          if (options.xaxis && typeof options.xaxis.tickFormatter === "string") { delete options.xaxis.tickFormatter; }')
             js_parts.append('          if (options.series) { options.series.stack = true; if (options.series.bars) { options.series.bars.show = true; } else { options.series.bars = { show: true }; } } else { options.series = { stack: true, bars: { show: true } }; }')
             
-            use_absolute_dates = config.get("use_absolute_dates", True)
+            use_absolute_dates = config.get("use_absolute_dates")
             
             # Criar array de meses traduzidos para JavaScript
             month_translations_main = []
@@ -768,7 +768,7 @@ class CompleteCollectionStats:
 def _render_main_screen_graph_html(deck_id=None):
     """Gera o HTML completo para o gráfico da tela principal."""
     config = mw.addonManager.getConfig(__name__)
-    period = config.get("main_screen_period", "3m")
+    period = config.get("main_screen_period")
     stats_instance = CompleteCollectionStats(mw.col, deck_id=deck_id, period=period)
     
     graph_html = render_card_evolution_graph(stats_instance)
@@ -779,7 +779,7 @@ def _render_main_screen_graph_html(deck_id=None):
 def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserContent):
     """Adiciona o gráfico de evolução do status à tela principal do navegador de baralhos."""
     config = mw.addonManager.getConfig(__name__)
-    if not config.get("show_on_main_screen", True):
+    if not config.get("show_in_deck_browser"):
         return
         
     try:
@@ -792,7 +792,7 @@ def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserConten
 def on_overview_render(overview: Overview, content: OverviewContent):
     """Adiciona o gráfico de evolução do status à tela de visão geral do baralho."""
     config = mw.addonManager.getConfig(__name__)
-    if not config.get("show_on_overview", True):
+    if not config.get("show_in_overview"):
         return
 
     try:
@@ -809,7 +809,7 @@ def on_overview_render(overview: Overview, content: OverviewContent):
 def init_main_screen_hooks():
     """Inicializa os ganchos para a tela principal (Navegador de Baralhos)."""
     config = mw.addonManager.getConfig(__name__)
-    if config.get("enable_main_screen", False):
+    if config.get("enable_main_screen"):
         # A verificação de show_in_overview/deck_browser é feita dentro de cada hook.
         overview_will_render_content.append(on_overview_render)
         deck_browser_will_render_content.append(on_deck_browser_render)
