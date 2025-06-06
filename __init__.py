@@ -698,14 +698,16 @@ class CompleteCollectionStats:
             js_parts.append('    if (typeof $.plot === "undefined") {')
             js_parts.append('      var flotScript = document.createElement("script");')
             js_parts.append('      flotScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js";')
+            js_parts.append('      flotScript.timeout = 3000;')  # Timeout de 3s
             js_parts.append('      flotScript.onload = function() {')
             js_parts.append('        var stackScript = document.createElement("script");')
             js_parts.append('        stackScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.min.js";')
-            js_parts.append('        stackScript.onload = function() { setTimeout(function() { initPlot(); }, 100); };')
-            js_parts.append('        stackScript.onerror = function() { setTimeout(function() { initPlot(); }, 100); };')
+            js_parts.append('        stackScript.timeout = 3000;')  # Timeout de 3s
+            js_parts.append('        stackScript.onload = function() { setTimeout(function() { initPlot(); }, 80); };')
+            js_parts.append('        stackScript.onerror = function() { console.log("Card Evolution: No internet or Flot unavailable, skipping external libs"); };')
             js_parts.append('        document.head.appendChild(stackScript);')
             js_parts.append('      };')
-            js_parts.append('      flotScript.onerror = function() { console.error("Card Evolution JS: Failed to load Flot from CDN"); };')
+            js_parts.append('      flotScript.onerror = function() { console.log("Card Evolution: No internet or Flot unavailable, skipping external libs"); };')
             js_parts.append('      document.head.appendChild(flotScript);')
             js_parts.append('      return false;')
             js_parts.append('    }')
@@ -740,12 +742,12 @@ class CompleteCollectionStats:
             # Injeta a lógica do tooltip aqui, para garantir que execute após o plot
             js_parts.append('          ' + tooltip_js_content)
             js_parts.append('        } catch (e) { console.error("Card Evolution Main Screen Plot JS Error (in setTimeout):", e); }')
-            js_parts.append('      }, 50);')
+            js_parts.append('      }, 30);')
             js_parts.append('    });')
             js_parts.append('    return true;')
             js_parts.append('  }')
             js_parts.append('  var attempts = 0;')
-            js_parts.append('  function tryInit() { attempts++; if (initPlot()) { } else if (attempts < 20) { setTimeout(tryInit, 300); } else { console.error("Card Evolution JS: Failed to initialize plot. jQuery or Flot may not be loaded."); } }')
+            js_parts.append('  function tryInit() { attempts++; if (initPlot()) { } else if (attempts < 20) { setTimeout(tryInit, 200); } else { console.error("Card Evolution JS: Failed to initialize plot. jQuery or Flot may not be loaded."); } }')
             js_parts.append('  if (document.readyState === "complete") { tryInit(); } else { window.addEventListener("load", tryInit); }')
             js_parts.append('})();')
             js_parts.append('</script>')
@@ -785,7 +787,7 @@ def _refresh_graph_after_delay():
             except Exception as e:
                 pass  # Silencia erros de refresh - não são críticos
         
-        QTimer.singleShot(1500, do_refresh)  # Delay de 1.5s após carregamento
+        QTimer.singleShot(800, do_refresh)  # Delay de 0.8s após carregamento
     except Exception as e:
         pass  # Silencia erros de setup - não são críticos
 
