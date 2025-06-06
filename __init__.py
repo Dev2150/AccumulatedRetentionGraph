@@ -50,33 +50,10 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     # Verificar se é tela principal (CompleteCollectionStats) e aplicar configuração
     is_main_screen = hasattr(self_instance, '_deck_id')  # Nossa classe customizada tem este atributo
     
-    # stats_type: 0=1m, 1=3m, 2=1y, 3=all(deck life)
-    # No Anki, parece que _periodDays retorna None para "all" (type 3),
-    # e type 2 (1 year) também pode se comportar como "all" em termos de _periodDays, mas tem um tipo distinto.
-    # get_start_end_chunk()[2] é o chunk_days_for_aggregation sugerido pelo Anki.
-    # Esperado: 1 para 1m, 7 para 3m, 30 para 1y/all.
-
-    stats_type_from_instance = getattr(self_instance, 'type', 3) # Default para 'all' se não encontrar
-    raw_chunk_from_anki = None
-    anki_suggested_chunk_days = 1 # Default inicial
-
-    try:
-        raw_chunk_from_anki = self_instance.get_start_end_chunk()
-        if raw_chunk_from_anki and len(raw_chunk_from_anki) > 2:
-            anki_suggested_chunk_days = raw_chunk_from_anki[2]
-        else:
-            # Se get_start_end_chunk não retornar o esperado, recorremos ao tipo.
-            if stats_type_from_instance == 0: anki_suggested_chunk_days = 1
-            elif stats_type_from_instance == 1: anki_suggested_chunk_days = 7
-            else: anki_suggested_chunk_days = 30 # 1y ou all
-
-    except (IndexError, AttributeError, TypeError) as e_chunk:
-        if stats_type_from_instance == 0: anki_suggested_chunk_days = 1
-        elif stats_type_from_instance == 1: anki_suggested_chunk_days = 7
-        else: anki_suggested_chunk_days = 30 # 1y ou all
-
-    # Para tela principal, usar configuração; para tela de stats, usar lógica original
+    # Para tela de estatísticas, usar o chunk sugerido pelo Anki
+    # Para tela principal, usar configuração do addon
     if is_main_screen:
+        # Lógica para tela principal (mantém a configuração do addon)
         config = mw.addonManager.getConfig(__name__)
         aggregation_config = config.get("main_screen_aggregation", "w")
         
@@ -84,19 +61,32 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
             aggregation_chunk_days = 1
         else:  # 'w' ou default
             aggregation_chunk_days = 7
-            
     else:
-        # Lógica original para tela de estatísticas
-        if stats_type_from_instance == 0: # 1 Mês
-            aggregation_chunk_days = 1
-        elif stats_type_from_instance == 1: # 3 Meses
-            aggregation_chunk_days = 7
-        elif stats_type_from_instance == 2: # 1 Ano
-            aggregation_chunk_days = 30 
-        elif stats_type_from_instance == 3: # Deck Life (All)
-            aggregation_chunk_days = 30
-        else: # Fallback para segurança, embora não deva acontecer
-            aggregation_chunk_days = anki_suggested_chunk_days
+        # Para tela de estatísticas, usar o chunk sugerido pelo Anki
+        try:
+            raw_chunk_from_anki = self_instance.get_start_end_chunk()
+            if raw_chunk_from_anki and len(raw_chunk_from_anki) > 2:
+                aggregation_chunk_days = raw_chunk_from_anki[2]
+            else:
+                # Fallback baseado no tipo se get_start_end_chunk falhar
+                stats_type_from_instance = getattr(self_instance, 'type', 3)
+                if stats_type_from_instance == 0: # 1 Mês
+                    aggregation_chunk_days = 1
+                elif stats_type_from_instance == 1: # 3 Meses
+                    aggregation_chunk_days = 7
+                elif stats_type_from_instance == 2: # 1 Ano
+                    aggregation_chunk_days = 30 
+                else: # Deck Life (All)
+                    aggregation_chunk_days = 30
+        except (IndexError, AttributeError, TypeError):
+            # Fallback se qualquer erro ocorrer
+            stats_type_from_instance = getattr(self_instance, 'type', 3)
+            if stats_type_from_instance == 0:
+                aggregation_chunk_days = 1
+            elif stats_type_from_instance == 1:
+                aggregation_chunk_days = 7
+            else:
+                aggregation_chunk_days = 30
 
     unit_suffix = "d"
     if aggregation_chunk_days == 7:
@@ -120,7 +110,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
             first_rev_query += " WHERE " + " AND ".join(first_rev_query_conditions)
         min_revlog_id_ms = self_instance.col.db.scalar(first_rev_query)
         if not min_revlog_id_ms: # Se não há revisões, retorna dados vazios
-            return [], {}, ""
+            return [], {}, "", aggregation_chunk_days
         days_ago = (day_cutoff_s - (min_revlog_id_ms / 1000)) // 86400
         graph_start_day_idx = -int(days_ago)
 
@@ -143,7 +133,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     all_reviews = self_instance.col.db.all(query)
 
     if not all_reviews:
-        return [], {}, ""
+        return [], {}, "", aggregation_chunk_days
 
     card_current_states = {}
     daily_graph_data_points = {} # Mapeia day_idx para contagens diárias
@@ -413,20 +403,17 @@ $(function() {{
             "backgroundOpacity": 0
         }
     }
-    return series, graph_options, tooltip_html
+    return series, graph_options, tooltip_html, aggregation_chunk_days
 
 def render_card_evolution_graph(self_instance):
     graph_id = "evolutionGraph" + str(time.time()).replace('.', '')
     title = tr("graph_title")
     subtitle = tr("graph_subtitle")
-    series_data, options, tooltip_html = get_card_evolution_data(self_instance, graph_id)
+    series_data, options, tooltip_html, aggregation_chunk_days = get_card_evolution_data(self_instance, graph_id)
 
     # Remover prints de depuração
     if not series_data or not any(s['data'] for s in series_data):
         return "<div style='text-align:center;margin-top:1em;'>" + tr("graph_no_data") + "</div>"
-
-    # Extrair aggregation_chunk_days das opções para usar no xunit (não mais usado para xunit, mas pode ser útil para logs ou futuras refs)
-    current_aggregation_chunk_days = options.get("xaxis", {}).get("aggregation_chunk_days", 1)
 
     # Usar o método _title da instância para um estilo de título padrão do Anki.
     # O método _title geralmente lida com a tradução se as strings forem chaves de tradução.
@@ -444,11 +431,12 @@ def render_card_evolution_graph(self_instance):
             tooltip_html=tooltip_html
         )
     else:
-        # Para a tela de estatísticas padrão, usamos o método original e anexamos o script do tooltip
+        # Para a tela de estatísticas padrão, usamos o método original com xunit e anexamos o script do tooltip
         html += self_instance._graph(
             id=graph_id,
             data=series_data,
             conf=options,
+            xunit=aggregation_chunk_days,
             ylabel=tr("graph_y_label")
         )
         html += tooltip_html
