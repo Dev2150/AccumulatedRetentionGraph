@@ -561,7 +561,18 @@ class CompleteCollectionStats:
         elif period == "1y":
             self.type = 2
         else:
-            self.type = 3
+            # Para períodos customizados, escolhe tipo baseado na duração
+            period_days = self._periodDays()
+            if period_days is None:  # deck_life
+                self.type = 3
+            elif period_days <= 30:  # até 1 mês
+                self.type = 0
+            elif period_days <= 90:  # até 3 meses
+                self.type = 1
+            elif period_days <= 365:  # até 1 ano
+                self.type = 2
+            else:  # mais de 1 ano
+                self.type = 3
             
     def _periodDays(self):
         if self._period == "1m":
@@ -570,7 +581,18 @@ class CompleteCollectionStats:
             return 90
         elif self._period == "1y":
             return 365
+        elif self._period == "deck_life":
+            return None
         else:
+            # Tenta interpretar como Xm (X meses) ou Xy (X anos)
+            import re
+            match = re.match(r'^(\d+)([my])$', self._period)
+            if match:
+                number, unit = int(match.group(1)), match.group(2)
+                if unit == 'm':  # meses
+                    return number * 30
+                elif unit == 'y':  # anos
+                    return number * 365
             return None
             
     def _revlogLimit(self):
@@ -600,13 +622,12 @@ class CompleteCollectionStats:
         else:
             chunk_days = 7
         
-        if self._period == "1m":
-            return (day_cutoff_s - (30 * 86400), day_cutoff_s, chunk_days)
-        elif self._period == "3m":
-            return (day_cutoff_s - (90 * 86400), day_cutoff_s, chunk_days)
-        elif self._period == "1y":
-            return (day_cutoff_s - (365 * 86400), day_cutoff_s, chunk_days)
-        else:
+        # Usa _periodDays() para calcular o período em dias
+        period_days = self._periodDays()
+        
+        if period_days is not None:
+            return (day_cutoff_s - (period_days * 86400), day_cutoff_s, chunk_days)
+        else:  # deck_life
             first_rev_query = "SELECT MIN(id) FROM revlog"
             if self._deck_id:
                 try:
