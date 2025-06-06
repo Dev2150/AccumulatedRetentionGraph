@@ -273,8 +273,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     tick_formatter_js = (
         "function(val, axis) {\n" +
         "    var suffix = '" + unit_suffix + "';\n" +
-        "    var aggChunkDays = " + str(aggregation_chunk_days) + ";\n" +
-        "    if (aggChunkDays === 1 && Math.abs(val - 0) < 0.0001) {\n" +
+        "    if (Math.abs(val - 0) < 0.0001) {\n" +
         "        return '" + tr_today + "';\n" +
         "    }\n" +
         "    return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;\n" +
@@ -292,8 +291,20 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 $(function() {{
     var tooltip = $("#evolutionGraphTooltip");
     if (!tooltip.length) {{
-        tooltip = $('<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:5px;border:1px solid #333;background-color:#f5f5f5;opacity:0.9;color:#000;"></div>').appendTo("body");
+        tooltip = $('<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:8px;background-color:#fff;border:1px solid #ddd;color:#333;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.1);pointer-events:none;font-size:0.9em;z-index:100;"></div>').appendTo("body");
     }}
+
+    // Aplica o estilo de fundo diretamente na tabela da legenda
+    try {{
+        var legendTable = $("#{graph_id} .legend table");
+        if (legendTable.length) {{
+            legendTable.css('background-color', 'rgba(255, 255, 255, 0.8)');
+            legendTable.css('border-radius', '4px'); // Adiciona cantos arredondados para consistência
+        }}
+    }} catch (e) {{
+        // Ignora erros caso a legenda não seja encontrada
+    }}
+
     $("#{graph_id}").bind("plothover", function (event, pos, item) {{
         if (item) {{
             var x_val_on_axis = item.datapoint[0];
@@ -326,7 +337,7 @@ $(function() {{
             var titleX;
             var today_str = '{tr_today}'; // Passa a string "Hoje" traduzida
 
-            if (aggregationChunkDaysFromOptions === 1 && Math.abs(x_val_on_axis - 0) < 0.0001) {{
+            if (Math.abs(x_val_on_axis - 0) < 0.0001) {{
                 titleX = today_str;
             }} else {{
                 titleX = displayX + unitSuffixFromOptions;
@@ -376,7 +387,12 @@ $(function() {{
             }
         },
         "grid": {"hoverable": True, "clickable": True, "borderColor": "#C0C0C0"},
-        "legend": {"show": True, "position": "nw"}
+        "legend": {
+            "show": True,
+            "position": "nw",
+            "backgroundColor": None,
+            "backgroundOpacity": 0
+        }
     }
     return series, graph_options, tooltip_html
 
@@ -664,7 +680,7 @@ class CompleteCollectionStats:
             js_parts.append('          var options = ' + options_json_for_js + ';')
             js_parts.append('          if (options.xaxis && typeof options.xaxis.tickFormatter === "string") { delete options.xaxis.tickFormatter; }')
             js_parts.append('          if (options.series) { options.series.stack = true; if (options.series.bars) { options.series.bars.show = true; } else { options.series.bars = { show: true }; } } else { options.series = { stack: true, bars: { show: true } }; }')
-            js_parts.append('          options.xaxis.tickFormatter = function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var aggDays = ' + str(py_agg_days) + '; var todayLabel = \'' + py_today_label + '\'; if (aggDays === 1 && Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; };')
+            js_parts.append('          options.xaxis.tickFormatter = function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; };')
             js_parts.append('          $.plot(graphDiv, data, options);')
             # Injeta a lógica do tooltip aqui, para garantir que execute após o plot
             js_parts.append('          ' + tooltip_js_content)
