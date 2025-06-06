@@ -343,16 +343,22 @@ $(function() {{
             }}
 
             var xaxes_options = plot.getOptions().xaxes[0];
-            var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
             var aggregationChunkDaysFromOptions = xaxes_options.aggregation_chunk_days || 1;
-            var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
-            var displayX = x_val_on_axis.toFixed(tickDecimalsFromOptions);
             var titleX;
             var today_str = '{tr_today}'; // Passa a string "Hoje" traduzida
+            var useAbsoluteDates = {str(use_absolute_dates).lower()};
 
             if (Math.abs(x_val_on_axis - 0) < 0.0001) {{
                 titleX = today_str;
+            }} else if (useAbsoluteDates) {{
+                var dayCutoffS = {day_cutoff_s};
+                var dayOffset = x_val_on_axis * aggregationChunkDaysFromOptions;
+                var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);
+                titleX = date.toLocaleDateString(undefined, {{ month: 'short', day: 'numeric' }});
             }} else {{
+                var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
+                var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
+                var displayX = x_val_on_axis.toFixed(tickDecimalsFromOptions);
                 titleX = displayX + unitSuffixFromOptions;
             }}
 
