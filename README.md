@@ -1,15 +1,12 @@
 # **Accumulated Retention Graph**
 
-> **Note:** This document is available in English, Portuguese, and Spanish. The English version is presented first, followed by the Portuguese version.
+> **Note:** This document is available in English and Portuguese. The English version is presented first, followed by the Portuguese version.
 >
-> **Nota:** Este documento está disponível em inglês, português e espanhol. A versão em inglês é apresentada primeiro, seguida pela versão em português.
+> **Nota:** Este documento está disponível em inglês e português. A versão em inglês é apresentada primeiro, seguida pela versão em português.
 
 ---
 
 <p align="center">
-  *Anki's statistics screen with the "Accumulated Retention Graph" add-on installed:*/<br>
-  *Tela de estatísticas do Anki com o add-on "Accumulated Retention Graph" instalado:*
-  <br>
   <img src="https://i.ibb.co/C5nGLZqj/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
@@ -17,29 +14,36 @@
 
 ### What is Accumulated Retention Graph?
 
-Accumulated Retention Graph is an Anki addon that provides a visual representation of how your card learning states (Learning, Young, Mature, Retained) have evolved over time. It adds a new stacked bar graph to Anki's statistics screen, allowing you to see trends in your study habits and how your knowledge base is solidifying.
+Accumulated Retention Graph is an Anki addon that provides a visual representation of how your card learning states evolve over time. It displays stacked bar graphs showing the distribution of cards across different learning states (Learning, Young, Mature, Retained).
 
-### How does it work?
+### Key Features
 
-- **Evolution Graph:** Displays a stacked bar chart showing the count of cards in each state (Learning, Young, Mature, Retained) for different time periods (1 month, 3 months, 1 year, or deck life).
-- **Color-Coded States:**
-    - **Blue (Retained):** Cards with intervals greater than 84 days.
-    - **Dark Green (Mature):** Cards with intervals greater than 21 days and up to 84 days.
-    - **Light Green (Young):** Cards with intervals greater than 7 days and up to 21 days.
-    - **Orange (Learning):** Cards with intervals up to 7 days, or currently in learning/relearning phases.
-- **Time Aggregation:** Data is aggregated by day, week, or month. The x-axis displays clear, absolute dates (e.g., "Oct 24") instead of relative ones, making the graph easy to read.
-- **Interactivity:**
-    - Hover over a bar segment to see a detailed tooltip with counts for each category and the total for that specific period.
-- **Customization:**
-    - Choose to show or hide specific card states (Learning, Young, Mature, Retained) via the addon's configuration.
-    - Option to display the evolution graph at the beginning or end of the standard card stats.
-    - Toggle between absolute dates (e.g., "Oct 24") and relative days (e.g., "-2d") for the x-axis display.
+#### **Statistics Screen Integration**
+- **Evolution Graph:** Stacked bar chart showing card counts for each state over time
+- **Time Periods:** 1 month, 3 months, 1 year, or deck life
+- **Data Aggregation:** By day, week, or month with absolute dates (e.g., "Oct 24")
 
-### Main benefits
+#### **Main Screen Integration** *(NEW!)*
+- **Overview Screen:** Graph displayed in deck overview
+- **Deck Browser:** Graph displayed in deck browser screen
+- **Customizable:** Configurable period, aggregation level, and height
 
-- **Track Progress Over Time:** See how the distribution of your card states changes, indicating learning progression or areas needing more attention.
-- **Identify Trends:** Understand if you are consistently maturing cards or if many are stuck in early learning phases.
-- **Integrated View:** The graph is added directly to the existing Anki statistics screen for the current deck or entire collection.
+#### **Card States & Colors**
+- **Blue (Retained):** Cards with intervals > 84 days
+- **Dark Green (Mature):** Cards with intervals 21-84 days  
+- **Light Green (Young):** Cards with intervals 7-21 days
+- **Orange (Learning):** Cards with intervals ≤ 7 days or in learning phases
+
+#### **Interactive Features**
+- **Tooltips:** Hover for detailed counts and totals
+- **Customization:** Show/hide specific card states via configuration
+- **Flexible Display:** Choose graph position and date format
+
+### Benefits
+
+- **Track Progress:** Monitor how card distributions change over time
+- **Identify Patterns:** Understand learning progression and bottlenecks
+- **Multiple Views:** Access graphs from statistics screen and main interface
 
 ---
 
@@ -47,59 +51,91 @@ Accumulated Retention Graph is an Anki addon that provides a visual representati
 
 ### O que é o Accumulated Retention Graph?
 
-O Accumulated Retention Graph é um addon para o Anki que fornece uma representação visual de como os estados de aprendizado dos seus cartões (Aprendendo, Jovem, Maduro, Retido) evoluíram ao longo do tempo. Ele adiciona um novo gráfico de barras empilhadas à tela de estatísticas do Anki, permitindo que você veja tendências em seus hábitos de estudo e como sua base de conhecimento está se solidificando.
+O Accumulated Retention Graph é um addon para o Anki que fornece uma representação visual de como os estados de aprendizado dos seus cartões evoluem ao longo do tempo. Ele exibe gráficos de barras empilhadas mostrando a distribuição de cartões em diferentes estados de aprendizado (Aprendendo, Jovem, Maduro, Retido).
 
-### Como funciona?
+### Principais Funcionalidades
 
-- **Gráfico de Evolução:** Exibe um gráfico de barras empilhadas mostrando a contagem de cartões em cada estado (Aprendendo, Jovem, Maduro, Retido) para diferentes períodos de tempo (1 mês, 3 meses, 1 ano ou vida útil do baralho).
-- **Estados Codificados por Cores:**
-    - **Azul (Retido):** Cartões com intervalos superiores a 84 dias.
-    - **Verde Escuro (Maduro):** Cartões com intervalos superiores a 21 dias e até 84 dias.
-    - **Verde Claro (Jovem):** Cartões com intervalos superiores a 7 dias e até 21 dias.
-    - **Laranja (Aprendendo):** Cartões com intervalos de até 7 dias, ou atualmente nas fases de aprendizado/reaprendizado.
-- **Agregação de Tempo:** Os dados são agregados por dia, semana ou mês. O eixo x exibe datas absolutas e claras (ex: "24 de out") em vez de dias relativos, tornando o gráfico fácil de ler.
-- **Interatividade:**
-    - Passe o mouse sobre um segmento da barra para ver uma dica de ferramenta detalhada com as contagens para cada categoria e o total para aquele período específico.
-- **Customização:**
-    - Escolha mostrar ou ocultar estados específicos dos cartões (Aprendendo, Jovem, Maduro, Retido) através da configuração do addon.
-    - Opção para exibir o gráfico de evolução no início ou no final das estatísticas padrão dos cartões.
-    - Alterne entre datas absolutas (ex: "24 de out") e dias relativos (ex: "-2d") para a exibição no eixo x.
+#### **Integração com Tela de Estatísticas**
+- **Gráfico de Evolução:** Gráfico de barras empilhadas mostrando contagens de cartões para cada estado ao longo do tempo
+- **Períodos de Tempo:** 1 mês, 3 meses, 1 ano ou vida útil do deck
+- **Agregação de Dados:** Por dia, semana ou mês com datas absolutas (ex: "24 de out")
 
-### Principais benefícios
+#### **Integração com Tela Principal** *(NOVO!)*
+- **Tela de Visão Geral:** Gráfico exibido na visão geral do deck
+- **Navegador de Decks:** Gráfico exibido na tela do navegador de decks
+- **Personalizável:** Período, nível de agregação e altura configuráveis
 
-- **Acompanhe o Progresso ao Longo do Tempo:** Veja como a distribuição dos estados dos seus cartões muda, indicando a progressão do aprendizado ou áreas que precisam de mais atenção.
-- **Identifique Tendências:** Entenda se você está consistentemente maturando cartões ou se muitos estão presos nas fases iniciais de aprendizado.
-- **Visão Integrada:** O gráfico é adicionado diretamente à tela de estatísticas existente do Anki para o baralho atual ou coleção inteira.
+#### **Estados dos Cartões e Cores**
+- **Azul (Retido):** Cartões com intervalos > 84 dias
+- **Verde Escuro (Maduro):** Cartões com intervalos de 21-84 dias
+- **Verde Claro (Jovem):** Cartões com intervalos de 7-21 dias
+- **Laranja (Aprendendo):** Cartões com intervalos ≤ 7 dias ou em fases de aprendizado
 
-### License and Contact
+#### **Funcionalidades Interativas**
+- **Tooltips:** Passe o mouse para ver contagens detalhadas e totais
+- **Personalização:** Mostrar/ocultar estados específicos via configuração
+- **Exibição Flexível:** Escolha posição do gráfico e formato de data
+
+### Benefícios
+
+- **Acompanhe o Progresso:** Monitore como as distribuições de cartões mudam ao longo do tempo
+- **Identifique Padrões:** Entenda a progressão do aprendizado e gargalos
+- **Múltiplas Visualizações:** Acesse gráficos da tela de estatísticas e interface principal
+
+---
+
+## **Configuration**
+
+See `config.md` for detailed configuration options including:
+- Statistics screen display options
+- Main screen integration settings  
+- Card state visibility controls
+- Date format preferences
+
+Para opções de configuração detalhadas, consulte `config.md`, incluindo:
+- Opções de exibição da tela de estatísticas
+- Configurações de integração da tela principal
+- Controles de visibilidade dos estados dos cartões
+- Preferências de formato de data
+
+---
+
+## **License and Contact**
 
 - **Copyright(C)** [Carlos Duarte]
 - Licensed under [GNU AGPL, version 3](http://www.gnu.org/licenses/agpl.html)
-- For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues) (Note: This is a placeholder URL, please update it with your actual repository URL).
+- For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues)
 
 ## **Changelog**
 
+- **v1.4 - 2025-01-XX - Main Screen Integration**
+    - **NEW:** Added graph display to Anki's main screen (overview and deck browser)
+    - **NEW:** Configurable main screen options: period, aggregation, height
+    - **NEW:** Individual controls for overview and deck browser display
+    - Improved translation system with automatic language detection
+    - Enhanced configuration documentation
+    - Default main screen integration enabled
+
 - **v1.3 - 2025-06-05 - UI/UX Improvements & Absolute Dates**
-    - The graph's x-axis and tooltips now display absolute dates (e.g., "Oct 24") by default for better readability, instead of relative days (e.g., "-2d").
-    - Added a new configuration option, `use_absolute_dates` (default: `true`), to allow switching back to the relative day display.
-    - Standardized the "Today" label across all graph views.
-    - Improved tooltip and legend rendering to prevent visual glitches and ensure consistency.
-    - Adjusted title and subtitle spacing for a more compact layout.
-    - Fixed an issue where the graph's container border would not appear in the deck overview screen.
+    - The graph's x-axis and tooltips now display absolute dates (e.g., "Oct 24") by default for better readability
+    - Added `use_absolute_dates` configuration option (default: `true`)
+    - Standardized the "Today" label across all graph views
+    - Improved tooltip and legend rendering consistency
+    - Adjusted title and subtitle spacing for compact layout
+    - Fixed container border display issues in deck overview screen
 
 - **v1.2 - 2025-06-04 - Automatic Translation System**
-    - Complete overhaul of the translation system with automatic language detection
-    - Supported languages list is now dynamically extracted from `config.json`
+    - Complete overhaul of translation system with automatic language detection
+    - Dynamic language support extraction from `config.json`
     - Added full Spanish support by default
-    - More robust system using native Anki functions for language detection
+    - More robust system using native Anki functions
 
-- **v1.1 - 2025-05-28 - exclude_deleted_cards**
-    - Added option (`exclude_deleted_cards`) to control inclusion of reviews from deleted cards (default: true, excludes them).
+- **v1.1 - 2025-05-28 - Exclude Deleted Cards**
+    - Added `exclude_deleted_cards` option (default: true)
 
-- **v1.0 - 2025-05-27 - Initial version**
-  - Displays a stacked bar graph of card states (Learning, Young, Mature, Retained) over time.
-  - Data aggregation based on statistics period (1m, 3m, 1y, all).
-  - Customizable visibility for each card state series.
-  - Option to show the graph before or after Anki's default card stats.
-  - Tooltip display for detailed counts on hover.
-  - Basic internationalization for labels (English, Portuguese).
+- **v1.0 - 2025-05-27 - Initial Release**
+    - Stacked bar graph of card states over time
+    - Data aggregation based on statistics period
+    - Customizable card state visibility
+    - Tooltip display with detailed counts
+    - Basic internationalization (English, Portuguese)
