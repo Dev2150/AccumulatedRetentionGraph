@@ -738,8 +738,8 @@ def on_overview_render(overview: Overview, content: OverviewContent):
         current_deck_id = mw.col.decks.get_current_id()
         graph_html = _render_main_screen_graph_html(deck_id=current_deck_id)
         
-        # Injetar o gráfico. Para versões mais antigas do Anki, usamos content.table.
-        content.table += graph_html
+        # Injetar o gráfico, envolvendo-o em uma linha de tabela para renderização correta.
+        content.table += f'<tr><td colspan="2" style="padding: 10px 0;">{graph_html}</td></tr>'
         
     except Exception as e:
         print(f"Accumulated Retention: Failed to render graph on overview: {e}")
