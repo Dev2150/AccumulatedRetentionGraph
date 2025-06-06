@@ -262,6 +262,22 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     tr_today = tr("label_today")
     use_absolute_dates = config.get("use_absolute_dates", True)
 
+    # Obter o locale correto baseado no idioma detectado
+    from .translations import get_language_code
+    detected_lang = get_language_code()
+    
+    # Mapear códigos de idioma para locales JavaScript
+    locale_map = {
+        "en": "en-US",
+        "pt": "pt-BR", 
+        "pt_BR": "pt-BR",
+        "es": "es-ES",
+        "fr": "fr-FR",
+        "de": "de-DE",
+        "it": "it-IT"
+    }
+    js_locale = locale_map.get(detected_lang, "en-US")
+
     if use_absolute_dates:
         day_cutoff_for_js = day_cutoff_s
         tick_formatter_js = (
@@ -271,7 +287,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
             "    var dayCutoffS = " + str(day_cutoff_for_js) + ";\n" +
             "    var dayOffset = val * aggChunkDays;\n" +
             "    var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);\n" +
-            "    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });\n" +
+            "    return date.toLocaleDateString('" + js_locale + "', { month: 'short', day: 'numeric' });\n" +
             "}"
         )
     else:
@@ -344,7 +360,7 @@ $(function() {{
                 var dayCutoffS = {day_cutoff_s};
                 var dayOffset = x_val_on_axis * aggregationChunkDaysFromOptions;
                 var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);
-                titleX = date.toLocaleDateString(undefined, {{ month: 'short', day: 'numeric' }});
+                titleX = date.toLocaleDateString('{js_locale}', {{ month: 'short', day: 'numeric' }});
             }} else {{
                 var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
                 var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
@@ -646,7 +662,7 @@ class CompleteCollectionStats:
 
         try:
             if not data or not any(s.get('data') for s in data):
-                return '<div style="color:#888;text-align:center;margin:1em 0;">Sem dados para mostrar</div>'
+                return '<div style="color:#888;text-align:center;margin:1em 0;">' + tr("graph_no_data") + '</div>'
             
             data_json_for_js = json.dumps(data)
             options_json_for_js = json.dumps(conf)
@@ -695,8 +711,18 @@ class CompleteCollectionStats:
             js_parts.append('          if (options.series) { options.series.stack = true; if (options.series.bars) { options.series.bars.show = true; } else { options.series.bars = { show: true }; } } else { options.series = { stack: true, bars: { show: true } }; }')
             
             use_absolute_dates = config.get("use_absolute_dates", True)
+            
+            # Obter locale correto para formatação de datas
+            from .translations import get_language_code
+            detected_lang = get_language_code()
+            locale_map = {
+                "en": "en-US", "pt": "pt-BR", "pt_BR": "pt-BR", "es": "es-ES",
+                "fr": "fr-FR", "de": "de-DE", "it": "it-IT"
+            }
+            js_locale = locale_map.get(detected_lang, "en-US")
+            
             if use_absolute_dates:
-                formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(py_agg_days) + '; var dayCutoffS = ' + str(py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); return date.toLocaleDateString(undefined, { month: \'short\', day: \'numeric\' }); }'
+                formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(py_agg_days) + '; var dayCutoffS = ' + str(py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); return date.toLocaleDateString(\'' + js_locale + '\', { month: \'short\', day: \'numeric\' }); }'
             else:
                 formatter_func_str = 'function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; }'
             

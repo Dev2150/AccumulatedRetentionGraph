@@ -33,11 +33,26 @@ def get_language_code() -> str:
         pass
 
     if raw_anki_lang:
-        # Match exato
-        if raw_anki_lang in supported_languages:
-            return raw_anki_lang
+        # Normalizar alguns códigos de idioma comuns
+        lang_normalize_map = {
+            'pt': 'pt_BR',
+            'pt-BR': 'pt_BR',
+            'pt_br': 'pt_BR',
+            'en': 'en',
+            'en-US': 'en',
+            'en_US': 'en',
+            'es': 'es',
+            'es-ES': 'es',
+            'es_ES': 'es'
+        }
+        
+        normalized_lang = lang_normalize_map.get(raw_anki_lang, raw_anki_lang)
+        
+        # Match exato com versão normalizada
+        if normalized_lang in supported_languages:
+            return normalized_lang
         # Match por prefixo (ex: "pt" de "pt_BR")
-        lang_prefix = raw_anki_lang[:2]
+        lang_prefix = normalized_lang[:2]
         if lang_prefix in supported_languages:
             return lang_prefix
 
@@ -63,6 +78,8 @@ def get_language_code() -> str:
 def tr(key: str, **kwargs: Any) -> str:
     """Traduz uma chave para o idioma atual usando os mapas do config.json."""
     lang_code = get_language_code()
+    
+
     
     config = mw.addonManager.getConfig(__package__)
     if not config:
