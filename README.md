@@ -7,7 +7,7 @@
 ---
 
 <p align="center">
-  <img src="https://i.ibb.co/C5nGLZqj/image.png" alt="Screenshot of Accumulated Retention Graph">
+  <img src="https://i.ibb.co/1JPsLqjM/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
 ## **English**
@@ -108,7 +108,7 @@ Para opções de configuração detalhadas, consulte `config.md`, incluindo:
 
 ## **Changelog**
 
-- **v1.4 - 2025-01-XX - Main Screen Integration**
+- **v1.4 - 2025-06-06 - Main Screen Integration**
     - **NEW:** Added graph display to Anki's main screen (overview and deck browser)
     - **NEW:** Configurable main screen options: period, aggregation, height
     - **NEW:** Individual controls for overview and deck browser display
