@@ -14,10 +14,10 @@ You can customize the addon's behavior by editing the `config.json` file within 
 #### Main Screen Options (NEW!)
 -   `enable_main_screen` (boolean): If `true`, enables the graph on Anki's main screen (overview and deck browser). Default: `false`.
 -   `main_screen_period` (string): Default period for main screen graph. Options: "1m", "3m", "1y", "deck_life". Default: `"3m"`.
+-   `main_screen_aggregation` (string): Nível de agregação para o gráfico da tela principal. Opções: "d" (diário), "w" (semanal). Padrão: `"w"`.
 -   `main_screen_height` (integer): Height of the graph in pixels on main screen. Default: `250`.
 -   `show_in_overview` (boolean): If `true`, shows the graph in deck overview screen. Default: `true`.
 -   `show_in_deck_browser` (boolean): If `true`, shows the graph in deck browser screen. Default: `true`.
--   `show_no_data_message` (boolean): If `true`, shows a message when no data is available. Default: `false`.
 
 (The `translation_maps` key in `config.json` is used for internationalization and should generally not be modified unless you are adding new translations.)
 
@@ -37,9 +37,9 @@ Você pode customizar o comportamento do addon editando o arquivo `config.json` 
 #### Opções da Tela Principal (NOVO!)
 -   `enable_main_screen` (booleano): Se `true`, habilita o gráfico na tela principal do Anki (visão geral e navegador de decks). Padrão: `false`.
 -   `main_screen_period` (string): Período padrão para o gráfico da tela principal. Opções: "1m", "3m", "1y", "deck_life". Padrão: `"3m"`.
+-   `main_screen_aggregation` (string): Nível de agregação para o gráfico da tela principal. Opções: "d" (diário), "w" (semanal). Padrão: `"w"`.
 -   `main_screen_height` (integer): Altura do gráfico em pixels na tela principal. Padrão: `250`.
 -   `show_in_overview` (booleano): Se `true`, mostra o gráfico na tela de visão geral do deck. Padrão: `true`.
 -   `show_in_deck_browser` (booleano): Se `true`, mostra o gráfico na tela do navegador de decks. Padrão: `true`.
--   `show_no_data_message` (booleano): Se `true`, mostra uma mensagem quando não há dados disponíveis. Padrão: `false`.
 
 (A chave `translation_maps` em `config.json` é usada para internacionalização e geralmente não deve ser modificada, a menos que você esteja adicionando novas traduções.)
