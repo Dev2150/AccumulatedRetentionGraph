@@ -268,17 +268,30 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     xaxis_min = min_x_val_for_axis - 0.5
     xaxis_max = max_x_val_for_axis + 0.5
     
-    # Construir o tickFormatter dinamicamente - SEM F-STRING
+    # Construir o tickFormatter dinamicamente
     tr_today = tr("label_today")
-    tick_formatter_js = (
-        "function(val, axis) {\n" +
-        "    var suffix = '" + unit_suffix + "';\n" +
-        "    if (Math.abs(val - 0) < 0.0001) {\n" +
-        "        return '" + tr_today + "';\n" +
-        "    }\n" +
-        "    return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;\n" +
-        "}"
-    )
+    use_absolute_dates = config.get("use_absolute_dates", True)
+
+    if use_absolute_dates:
+        day_cutoff_for_js = day_cutoff_s
+        tick_formatter_js = (
+            "function(val, axis) {\n" +
+            "    if (Math.abs(val - 0) < 0.0001) { return '" + tr_today + "'; }\n" +
+            "    var aggChunkDays = " + str(aggregation_chunk_days) + ";\n" +
+            "    var dayCutoffS = " + str(day_cutoff_for_js) + ";\n" +
+            "    var dayOffset = val * aggChunkDays;\n" +
+            "    var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);\n" +
+            "    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });\n" +
+            "}"
+        )
+    else:
+        tick_formatter_js = (
+            "function(val, axis) {\n" +
+            "    var suffix = '" + unit_suffix + "';\n" +
+            "    if (Math.abs(val - 0) < 0.0001) { return '" + tr_today + "'; }\n" +
+            "    return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;\n" +
+            "}"
+        )
 
     # Passar as strings traduzidas para o JS do tooltip
     tr_tooltip_period = tr("tooltip_period")
@@ -648,6 +661,12 @@ class CompleteCollectionStats:
             py_agg_days = conf.get('xaxis', {}).get('aggregation_chunk_days', 1)
             py_today_label = tr("label_today").replace('%', '%%')
             
+            # Get day_cutoff_s to pass to JS for absolute dates
+            try:
+                py_day_cutoff_s = self.col.sched.day_cutoff
+            except AttributeError:
+                py_day_cutoff_s = self.col.sched.dayCutoff # For older Anki versions
+            
             html_parts = []
             html_parts.append('<div id="' + id + '" style="height:' + str(height) + 'px; width:95%; margin: 0 auto;"></div>')
             html_parts.append('<p style="text-align: center; font-size: 0.8em; color: #666; margin-top: 0.5em;">' + safe_ylabel + '</p>')
@@ -680,7 +699,14 @@ class CompleteCollectionStats:
             js_parts.append('          var options = ' + options_json_for_js + ';')
             js_parts.append('          if (options.xaxis && typeof options.xaxis.tickFormatter === "string") { delete options.xaxis.tickFormatter; }')
             js_parts.append('          if (options.series) { options.series.stack = true; if (options.series.bars) { options.series.bars.show = true; } else { options.series.bars = { show: true }; } } else { options.series = { stack: true, bars: { show: true } }; }')
-            js_parts.append('          options.xaxis.tickFormatter = function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; };')
+            
+            use_absolute_dates = config.get("use_absolute_dates", True)
+            if use_absolute_dates:
+                formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(py_agg_days) + '; var dayCutoffS = ' + str(py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); return date.toLocaleDateString(undefined, { month: \'short\', day: \'numeric\' }); }'
+            else:
+                formatter_func_str = 'function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; }'
+            
+            js_parts.append('          options.xaxis.tickFormatter = ' + formatter_func_str + ';')
             js_parts.append('          $.plot(graphDiv, data, options);')
             # Injeta a lógica do tooltip aqui, para garantir que execute após o plot
             js_parts.append('          ' + tooltip_js_content)
