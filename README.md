@@ -10,7 +10,7 @@
 <b>2025-06-09 - Added `exclude_suspended_cards` option (default: true)</b>
 
 <p align="center">
-  <img src="https://i.ibb.co/1JPsLqjM/image.png" alt="Screenshot of Accumulated Retention Graph">
+  <img src="https://i.ibb.co/PzhVC2Fz/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
 <p align="center">
