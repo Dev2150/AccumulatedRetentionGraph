@@ -6,6 +6,9 @@
 
 ---
 
+<b>#### New Change:</b>
+<b>2025-06-09 - Added `exclude_suspended_cards` option (default: true)</b>
+
 <p align="center">
   <img src="https://i.ibb.co/1JPsLqjM/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
@@ -108,6 +111,8 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 
 ## **Changelog**
 
+- **v1.5 - 2025-06-09 - Exclude Suspended Cards**
+    - Added `exclude_suspended_cards` option (default: true)
 - **v1.4 - 2025-06-06 - Main Screen Integration**
     - **NEW:** Added graph display to Anki's main screen (overview and deck browser)
     - **NEW:** Configurable main screen options: period, aggregation, height
@@ -115,7 +120,6 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
     - Improved translation system with automatic language detection
     - Enhanced configuration documentation
     - Default main screen integration enabled
-
 - **v1.3 - 2025-06-05 - UI/UX Improvements & Absolute Dates**
     - The graph's x-axis and tooltips now display absolute dates (e.g., "Oct 24") by default for better readability
     - Added `use_absolute_dates` configuration option (default: `true`)
@@ -123,16 +127,13 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
     - Improved tooltip and legend rendering consistency
     - Adjusted title and subtitle spacing for compact layout
     - Fixed container border display issues in deck overview screen
-
 - **v1.2 - 2025-06-04 - Automatic Translation System**
     - Complete overhaul of translation system with automatic language detection
     - Dynamic language support extraction from `config.json`
     - Added full Spanish support by default
     - More robust system using native Anki functions
-
 - **v1.1 - 2025-05-28 - Exclude Deleted Cards**
     - Added `exclude_deleted_cards` option (default: true)
-
 - **v1.0 - 2025-05-27 - Initial Release**
     - Stacked bar graph of card states over time
     - Data aggregation based on statistics period

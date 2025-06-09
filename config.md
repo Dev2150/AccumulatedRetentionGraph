@@ -7,6 +7,7 @@
 - `hide_retained` (boolean): If `true`, the "Retained" section is not shown. Default: `false`.
 - `show_at_beginning` (boolean): If `true`, the graph will be displayed before Anki's default statistics. Default: `false`.
 - `exclude_deleted_cards` (boolean): If `true`, reviews from deleted cards are excluded. Default: `true`.
+- `exclude_suspended_cards` (boolean): If `true`, reviews from suspended cards are excluded. Default: `true`.
 - `use_absolute_dates` (boolean): If `true`, shows absolute dates instead of relative days. Default: `true`.
 
 ### Main Screen Options
@@ -33,6 +34,7 @@ Você pode personalizar o comportamento do addon editando o arquivo `config.json
 - `hide_retained` (booleano): Se `true`, a seção "Retido" não é mostrada. Padrão: `false`.
 - `show_at_beginning` (booleano): Se `true`, o gráfico será exibido antes das estatísticas padrão do Anki. Padrão: `false`.
 - `exclude_deleted_cards` (booleano): Se `true`, revisões de cartões deletados são excluídas. Padrão: `true`.
+- `exclude_suspended_cards` (booleano): Se `true`, revisões de cartões suspensos são excluídas. Padrão: `true`.
 - `use_absolute_dates` (booleano): Se `true`, mostra datas absolutas em vez de dias relativos. Padrão: `true`.
 
 ### Opções da Tela Principal

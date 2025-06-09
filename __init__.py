@@ -121,9 +121,13 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 
     config = mw.addonManager.getConfig(__name__)
     exclude_deleted = config.get("exclude_deleted_cards") # Padrão True se não encontrado
+    exclude_suspended = config.get("exclude_suspended_cards") # Padrão False se não encontrado
 
     if exclude_deleted:
         main_revlog_query_conditions.append("cid IN (SELECT id FROM cards)")
+    
+    if exclude_suspended:
+        main_revlog_query_conditions.append("cid IN (SELECT id FROM cards WHERE queue != -1)")
     
     query = """
         SELECT id, cid, type, ivl
