@@ -112,7 +112,7 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 ## **Changelog**
 
 - **v1.5 - 2025-06-09 - Exclude Suspended Cards**
-    - Added `exclude_suspended_cards` option (default: true)
+    - **NEW:** Added `exclude_suspended_cards` option (default: true)
     - Changed default `main_screen_period` from "3m" to "2m"
 - **v1.4 - 2025-06-06 - Main Screen Integration**
     - **NEW:** Added graph display to Anki's main screen (overview and deck browser)
