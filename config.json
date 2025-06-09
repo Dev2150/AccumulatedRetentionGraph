@@ -8,7 +8,7 @@
 	"exclude_suspended_cards": true,
 	"use_absolute_dates": true,
 	"enable_main_screen": true,
-	"main_screen_period": "3m",
+	"main_screen_period": "2m",
 	"main_screen_aggregation": "d",
 	"main_screen_height": 250,
 	"show_in_overview": true,
