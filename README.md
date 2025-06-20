@@ -7,37 +7,26 @@
 ---
 
 <b>#### New Change:</b>
-<b>2025-06-09 - Added `exclude_suspended_cards` option (default: true)</b>
+<b>2025-06-20 - Anki 25.6+ Compatibility</b>
 
 <p align="center">
-  <img src="https://i.ibb.co/PzhVC2Fz/image.png" alt="Screenshot of Accumulated Retention Graph">
-</p>
-
-<p align="center">
-  <img src="https://i.ibb.co/8Dkws9kr/image.png" alt="Additional Screenshot 1">
-</p>
-
-<p align="center">
-  <img src="https://i.ibb.co/JRwpbCn8/image.png" alt="Additional Screenshot 2">
+  <img src="https://i.ibb.co/zHs24s0R/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
 ## **English**
 
 ### What is Accumulated Retention Graph?
 
-Accumulated Retention Graph is an Anki addon that provides a visual representation of how your card learning states evolve over time. It displays stacked bar graphs showing the distribution of cards across different learning states (Learning, Young, Mature, Retained).
+Accumulated Retention Graph is an Anki addon that gamifies your learning by providing a visual representation of how your card states evolve over time. It allows you to clearly see whether you are adding new knowledge or consolidating what you have already learned.
 
-### Key Features
+**How to interpret the graph:**
 
-#### **Statistics Screen Integration**
-- **Evolution Graph:** Stacked bar chart showing card counts for each state over time
-- **Time Periods:** 1 month, 3 months, 1 year, or deck life
-- **Data Aggregation:** By day, week, or month with absolute dates (e.g., "Oct 24")
+The example graph illustrates a real study journey:
+- The first sharp rise (near May 17) marks the beginning of a new study topic.
+- Line `A` (horizontal arrow at the top) shows a period where no new cards were added, causing the total growth to stagnate.
+- Lines `B` and `C` (diagonal arrows) reveal that, even without new cards, existing knowledge is being consolidated. The light green (Young) and dark green (Mature) areas are increasing, indicating that the cards are maturing and content retention is improving.
 
-#### **Main Screen Integration** *(NEW!)*
-- **Overview Screen:** Graph displayed in deck overview
-- **Deck Browser:** Graph displayed in deck browser screen
-- **Customizable:** Configurable period, aggregation level, and height
+The goal is to help you balance the growth of your card volume with the consolidation of existing knowledge. Future versions may allow customization of the interval ranges for each state.
 
 #### **Card States & Colors**
 - **Blue (Retained):** Cards with intervals > 84 days
@@ -45,53 +34,28 @@ Accumulated Retention Graph is an Anki addon that provides a visual representati
 - **Light Green (Young):** Cards with intervals 7-21 days
 - **Orange (Learning):** Cards with intervals ≤ 7 days or in learning phases
 
-#### **Interactive Features**
-- **Tooltips:** Hover for detailed counts and totals
-- **Customization:** Show/hide specific card states via configuration
-- **Flexible Display:** Choose graph position and date format
-
-### Benefits
-
-- **Track Progress:** Monitor how card distributions change over time
-- **Identify Patterns:** Understand learning progression and bottlenecks
-- **Multiple Views:** Access graphs from statistics screen and main interface
-
 ---
 
 ## **Português**
 
 ### O que é o Accumulated Retention Graph?
 
-O Accumulated Retention Graph é um addon para o Anki que fornece uma representação visual de como os estados de aprendizado dos seus cartões evoluem ao longo do tempo. Ele exibe gráficos de barras empilhadas mostrando a distribuição de cartões em diferentes estados de aprendizado (Aprendendo, Jovem, Maduro, Retido).
+O Accumulated Retention Graph é um addon para o Anki que gamifica seu aprendizado, fornecendo uma representação visual de como o estado dos seus cartões evolui ao longo do tempo. Ele permite que você veja claramente se está adicionando novos conhecimentos ou consolidando o que já aprendeu.
 
-### Principais Funcionalidades
+**Como interpretar o gráfico:**
 
-#### **Integração com Tela de Estatísticas**
-- **Gráfico de Evolução:** Gráfico de barras empilhadas mostrando contagens de cartões para cada estado ao longo do tempo
-- **Períodos de Tempo:** 1 mês, 3 meses, 1 ano ou vida útil do deck
-- **Agregação de Dados:** Por dia, semana ou mês com datas absolutas (ex: "24 de out")
+O gráfico de exemplo ilustra uma jornada de estudo real:
+- A primeira subida acentuada (próximo a 17 de maio) marca o início de um novo tópico de estudo.
+- A linha `A` (seta horizontal no topo) mostra um período em que novos cartões pararam de ser adicionados, fazendo com que o crescimento total estagnasse.
+- As linhas `B` e `C` (setas diagonais) revelam que, mesmo sem novos cartões, o conhecimento existente está sendo consolidado. As áreas verde-claro (Jovem) e verde-escuro (Maduro) aumentam, indicando que os cartões estão amadurecendo e a retenção do conteúdo está melhorando.
 
-#### **Integração com Tela Principal** *(NOVO!)*
-- **Tela de Visão Geral:** Gráfico exibido na visão geral do deck
-- **Navegador de Decks:** Gráfico exibido na tela do navegador de decks
-- **Personalizável:** Período, nível de agregação e altura configuráveis
+O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume de cartões com a consolidação do conhecimento existente. Futuramente, a ideia é permitir o ajuste dos intervalos de dias para cada estado.
 
 #### **Estados dos Cartões e Cores**
 - **Azul (Retido):** Cartões com intervalos > 84 dias
 - **Verde Escuro (Maduro):** Cartões com intervalos de 21-84 dias
 - **Verde Claro (Jovem):** Cartões com intervalos de 7-21 dias
 - **Laranja (Aprendendo):** Cartões com intervalos ≤ 7 dias ou em fases de aprendizado
-
-#### **Funcionalidades Interativas**
-- **Tooltips:** Passe o mouse para ver contagens detalhadas e totais
-- **Personalização:** Mostrar/ocultar estados específicos via configuração
-- **Exibição Flexível:** Escolha posição do gráfico e formato de data
-
-### Benefícios
-
-- **Acompanhe o Progresso:** Monitore como as distribuições de cartões mudam ao longo do tempo
-- **Identifique Padrões:** Entenda a progressão do aprendizado e gargalos
-- **Múltiplas Visualizações:** Acesse gráficos da tela de estatísticas e interface principal
 
 ---
 
@@ -111,6 +75,9 @@ O Accumulated Retention Graph é um addon para o Anki que fornece uma representa
 
 ## **Changelog**
 
+- **v1.6 - 2025-06-20 - Anki 25.6+ Compatibility**
+    - **NEW:** Added compatibility for Anki 25.6+ with new core migration (3.9 → 3.13)
+    - Prepared addon for future Anki versions while maintaining backward compatibility
 - **v1.5 - 2025-06-09 - Exclude Suspended Cards**
     - **NEW:** Added `exclude_suspended_cards` option (default: true)
     - Changed default `main_screen_period` from "3m" to "2m"
