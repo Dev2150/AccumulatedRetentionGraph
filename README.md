@@ -10,7 +10,7 @@
 <b>- **v1.7 - 2025-06-26 - ETK Integration & FSRS Formula**</b>
 
 <p align="center">
-  <img src="https://i.ibb.co/zHs24s0R/image.png" alt="Screenshot of Accumulated Retention Graph">
+  <img src="https://i.ibb.co/5hzHTMKq/image.png" alt="Screenshot of Accumulated Retention Graph">
 </p>
 
 ## **English**
