@@ -79,7 +79,7 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Acknowledgments**
 
-- **ETK Formula**: Special thanks to **Luc-Mcgrady** for the FSRS retrievability formula implementation from [Anki Search Stats Extended](https://ankiweb.net/shared/info/1613056169), which inspired and provided the foundation for the ETK (Estimated Total Knowledge) feature in this addon.
+- **ETK Formula**: Special thanks to **Luc-Mcgrady**. The implementation was heavily inspired by the FSRS retrievability formula from the [Anki Search Stats Extended](https://ankiweb.net/shared/info/1613056169) addon and the logic from the [ts-fsrs-memorized](https://github.com/Luc-Mcgrady/ts-fsrs-memorized) library, which provided the foundation for the ETK (Estimated Total Knowledge) feature in this addon.
 
 ## **Changelog**
 
