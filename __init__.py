@@ -258,7 +258,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
             aggregated_etk_percent_data[chunk_idx] = 0
 
     series = []
-    data_learning, data_young, data_mature, data_retained, data_etk = [], [], [], [], []
+    data_learning, data_young, data_mature, data_retained, data_etk_percent = [], [], [], [], []
     
     all_x_flot_chunk_indices = sorted(list(set(aggregated_etk_data.keys())))
 
@@ -270,7 +270,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
         data_young.append([x_chunk_idx, aggregated_flot_data[CAT_YOUNG].get(x_chunk_idx, 0)])
         data_mature.append([x_chunk_idx, aggregated_flot_data[CAT_MATURE].get(x_chunk_idx, 0)])
         data_retained.append([x_chunk_idx, aggregated_flot_data[CAT_RETAINED].get(x_chunk_idx, 0)])
-        data_etk.append([x_chunk_idx, aggregated_etk_data.get(x_chunk_idx, 0)])
+        data_etk_percent.append([x_chunk_idx, aggregated_etk_percent_data.get(x_chunk_idx, 0)])
 
     config = mw.addonManager.getConfig(__name__)
     
@@ -284,12 +284,13 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
         series.append({"data": data_learning, "label": tr("label_learning"), "color": COLOR_LEARNING, "bars": {"order": 4}})
     
     series.append({
-        "data": data_etk, 
-        "label": tr("label_total_knowledge"), 
+        "data": data_etk_percent, 
+        "label": tr("label_avg_retention_percent"), 
         "color": "#FF6B35",
         "lines": {"show": True, "lineWidth": 2, "fill": False},
         "bars": {"show": False},
-        "stack": False
+        "stack": False,
+        "yaxis": 2
     })
 
     min_x_val_for_axis = 0
@@ -335,11 +336,12 @@ function(val, axis) {{
 """
     
     etk_percent_data_json = json.dumps(aggregated_etk_percent_data)
+    etk_abs_data_json = json.dumps(aggregated_etk_data)
 
     tooltip_html = f"""
 <script>
 $(function() {{
-    var etkPercentData = {etk_percent_data_json};
+    var etkAbsData = {etk_abs_data_json};
     var tooltip = $("#evolutionGraphTooltip");
     if (!tooltip.length) {{
         tooltip = $('<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:8px;background-color:#fff;border:1px solid #ddd;color:#333;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.1);pointer-events:none;font-size:0.9em;z-index:100;"></div>').appendTo("body");
@@ -375,7 +377,7 @@ $(function() {{
             var labelYoung = "{tr("label_young")}";
             var labelMature = "{tr("label_mature")}";
             var labelRetained = "{tr("label_retained")}";
-            var labelETK = "{tr("label_total_knowledge")}";
+            var labelRetentionPercent = "{tr("label_avg_retention_percent")}";
 
             if(pointData[x_val_on_axis]){{
                 if(pointData[x_val_on_axis][labelLearning] !== undefined) totalForDay += pointData[x_val_on_axis][labelLearning];
@@ -383,11 +385,11 @@ $(function() {{
                 if(pointData[x_val_on_axis][labelMature] !== undefined) totalForDay += pointData[x_val_on_axis][labelMature];
                 if(pointData[x_val_on_axis][labelRetained] !== undefined) totalForDay += pointData[x_val_on_axis][labelRetained];
                 
-                if(pointData[x_val_on_axis][labelETK] !== undefined) {{
-                    etkAbsValue = pointData[x_val_on_axis][labelETK].toFixed(1);
+                if(pointData[x_val_on_axis][labelRetentionPercent] !== undefined) {{
+                    etkPercentValue = pointData[x_val_on_axis][labelRetentionPercent].toFixed(1) + "%";
                 }}
-                if(etkPercentData[x_val_on_axis] !== undefined) {{
-                    etkPercentValue = etkPercentData[x_val_on_axis].toFixed(1) + "%";
+                if(etkAbsData[x_val_on_axis] !== undefined) {{
+                    etkAbsValue = etkAbsData[x_val_on_axis].toFixed(1);
                 }}
             }}
             
@@ -395,8 +397,9 @@ $(function() {{
             content += labelYoung + ": " + (pointData[x_val_on_axis]?.[labelYoung]?.toFixed(0) || 0) + "<br/>";
             content += labelMature + ": " + (pointData[x_val_on_axis]?.[labelMature]?.toFixed(0) || 0) + "<br/>";
             content += labelRetained + ": " + (pointData[x_val_on_axis]?.[labelRetained]?.toFixed(0) || 0) + "<br/>";
-            content += "<i>{tr("tooltip_total")}" + totalForDay.toFixed(0) + "</i><br/>";
-            content += "<b>" + labelETK + ": " + etkAbsValue + " (" + etkPercentValue + ")</b>";
+            content += "<i>{tr("tooltip_total")}" + totalForDay.toFixed(0) + "</i><br/><hr style='margin: 4px 0; border-top: 1px solid #ccc;'/>";
+            content += "<b>" + labelRetentionPercent + ": " + etkPercentValue + "</b><br/>";
+            content += "<b>{tr("label_total_knowledge")}: " + etkAbsValue + "</b>";
 
             tooltip.html(content).css({{top: item.pageY+5, left: item.pageX+5}}).fadeIn(200);
         }} else {{
@@ -413,7 +416,8 @@ $(function() {{
             "tickFormatter": tick_formatter_js,
         },
         "yaxes": [
-            {"min": 0, "position": "left"}
+            {"min": 0, "position": "left"},
+            {"min": 0, "max": 100, "position": "right", "alignTicksWithAxis": 1}
         ],
         "series": {
             "stack": True,
@@ -458,6 +462,7 @@ def render_card_evolution_graph(self_instance):
             data=series_data,
             conf=options,
             ylabel=tr("graph_y_label"),
+            y2label=tr("graph_y_label_percent"),
             tooltip_html=tooltip_html
         )
     else:
@@ -467,7 +472,8 @@ def render_card_evolution_graph(self_instance):
             data=series_data,
             conf=options,
             xunit=aggregation_chunk_days,
-            ylabel=tr("graph_y_label")
+            ylabel=tr("graph_y_label"),
+            y2label=tr("graph_y_label_percent")
         )
         html += tooltip_html
         
@@ -671,10 +677,11 @@ class CompleteCollectionStats:
             html_parts.append('</p>')
         return ''.join(html_parts)
         
-    def _graph(self, id, data, conf, ylabel="", tooltip_html=""):
+    def _graph(self, id, data, conf, ylabel="", y2label="", tooltip_html=""):
         config = mw.addonManager.getConfig(__name__)
         height = config.get("main_screen_height")
         safe_ylabel = ylabel.replace('%', '%%')
+        safe_y2label = y2label.replace('%', '%%')
         
         # Extrai o conteúdo JS puro do tooltip_html
         tooltip_js_content = ""
@@ -707,6 +714,11 @@ class CompleteCollectionStats:
             html_parts = []
             html_parts.append('<div id="' + id + '" style="height:' + str(height) + 'px; width:95%; margin: 0 auto;"></div>')
             html_parts.append('<p style="text-align: center; font-size: 0.8em; color: #666; margin-top: 0.5em;">' + safe_ylabel + '</p>')
+            if safe_y2label:
+                # Flot não tem um bom suporte para label do segundo eixo, então adicionamos manualmente se existir.
+                # A posição pode não ser perfeita, mas é uma solução.
+                html_parts.append('<p style="position:absolute; top: 50%; right: 0; transform: translateY(-50%) rotate(90deg); font-size: 0.8em; color: #666;">' + safe_y2label + '</p>')
+
             
             js_parts = []
             js_parts.append('<script type="text/javascript">')
