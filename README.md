@@ -7,7 +7,7 @@
 ---
 
 <b>#### New Change:</b>
-<b>2025-06-20 - Anki 25.6+ Compatibility</b>
+<b>- **v1.7 - 2025-06-26 - ETK Integration & FSRS Formula**</b>
 
 <p align="center">
   <img src="https://i.ibb.co/zHs24s0R/image.png" alt="Screenshot of Accumulated Retention Graph">
@@ -79,16 +79,13 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Acknowledgments**
 
-- **ETK Formula**: Special thanks to **Luc-Mcgrady**. The implementation was heavily inspired by the FSRS retrievability formula from the [Anki Search Stats Extended](https://ankiweb.net/shared/info/1613056169) addon and the logic from the [ts-fsrs-memorized](https://github.com/Luc-Mcgrady/ts-fsrs-memorized) library, which provided the foundation for the ETK (Estimated Total Knowledge) feature in this addon.
+- **ETK Formula**: Special thanks to **Luc-Mcgrady**. The ETK implementation uses the official FSRS retrievability formula R(t) = (1 + F * t/S)^C with parameters F=19/81 and C=-0.5, based on research from the [Anki Search Stats Extended](https://ankiweb.net/shared/info/1613056169) addon and the mathematical foundation from the [ts-fsrs-memorized](https://github.com/Luc-Mcgrady/ts-fsrs-memorized) library. This provides accurate knowledge quality measurement using the same algorithm as modern FSRS implementations.
 
 ## **Changelog**
 
-- **v1.7 - 2025-01-20 - ETK Integration**
-    - **NEW:** Added Estimated Total Knowledge (ETK) line overlay using FSRS retrievability calculations
-    - **NEW:** Orange line shows average retention percentage on right Y-axis (0-100%)
+- **v1.7 - 2025-06-26 - ETK Integration & FSRS Formula**
+    - **NEW:** Added Estimated Total Knowledge (ETK) line overlay using official FSRS retrievability calculations
     - **NEW:** Enhanced tooltips display both retention percentage and absolute ETK values
-    - **NEW:** Complete translations for ETK features in English, Spanish, and Portuguese
-    - Improved knowledge quality visualization alongside card quantity metrics
 - **v1.6 - 2025-06-20 - Anki 25.6+ Compatibility**
     - **NEW:** Added compatibility for Anki 25.6+ with new core migration (3.9 → 3.13)
     - Prepared addon for future Anki versions while maintaining backward compatibility

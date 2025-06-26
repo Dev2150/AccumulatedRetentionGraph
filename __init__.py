@@ -54,6 +54,19 @@ def get_card_category(revlog_type, last_interval_days):
             return CAT_RETAINED
     return CAT_LEARNING # Default
 
+def fsrs_retrievability(elapsed_days, stability):
+    """
+    Calcula a retrievability.
+    Para este gráfico, usamos a fórmula do FSRS-4.5 que é mais robusta
+    quando a estabilidade (S) é apenas uma aproximação (usando o ivl).
+    A fórmula do FSRS-6 é muito sensível e produz valores irrealistas sem a S real.
+    """
+    if stability <= 0:
+        return 0.0
+    
+    # Fórmula FSRS-4.5: R(t) = (1 + t / (9 * S)) ^ -1
+    return math.pow(1.0 + elapsed_days / (9.0 * stability), -1.0)
+
 def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     period_days = self_instance._periodDays()
 
@@ -201,13 +214,10 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
                 if days_since_review < 0:
                     continue
 
-                stability = max(state['ivl'], 1)
+                stability = max(state['ivl'], 0.1) # Usar ivl como aproximação de estabilidade, evitar divisão por zero
                 
-                # Fórmula de Retrievability, agora alinhada com a implementação do addon de referência.
-                # R = (1 + Δt / (9 * S)) ^ -1
-                # Δt = days_since_review
-                # S (estabilidade) é aproximada pelo último intervalo (ivl)
-                retrievability = (1 + days_since_review / (9 * stability)) ** -1
+                # Fórmula de Retrievability FSRS
+                retrievability = fsrs_retrievability(days_since_review, stability)
                 total_retrievability_for_day += retrievability
         
         day_counts = day_counts_recalc
