@@ -159,10 +159,6 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     daily_etk_points = {}
     daily_etk_percent_points = {}
 
-    # Parâmetros FSRS
-    W20 = 0.1542 
-    FACTOR = (0.9 ** (-1 / W20)) - 1 if W20 > 0 else 0
-
     current_rev_idx = 0
     for day_offset in range(graph_start_day_idx, 1): # Itera dia a dia
         current_day_end_ts_ms = (day_cutoff_s + (day_offset * 86400)) * 1000
@@ -207,8 +203,11 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 
                 stability = max(state['ivl'], 1)
                 
-                base = 1 + FACTOR * days_since_review / stability
-                retrievability = max(0, base) ** (-W20)
+                # Fórmula de Retrievability, agora alinhada com a implementação do addon de referência.
+                # R = (1 + Δt / (9 * S)) ^ -1
+                # Δt = days_since_review
+                # S (estabilidade) é aproximada pelo último intervalo (ivl)
+                retrievability = (1 + days_since_review / (9 * stability)) ** -1
                 total_retrievability_for_day += retrievability
         
         day_counts = day_counts_recalc
