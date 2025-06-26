@@ -155,18 +155,19 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
         return [], {}, "", aggregation_chunk_days
 
     card_current_states = {}
-    daily_graph_data_points = {} # Mapeia day_idx para contagens diárias
+    daily_graph_data_points = {}
+    daily_etk_points = {}
+    daily_etk_percent_points = {}
 
-    for i in range(graph_start_day_idx, 1):
-        daily_graph_data_points[i] = {
-            CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0
-        }
+    # Parâmetros FSRS
+    W20 = 0.1542 
+    FACTOR = (0.9 ** (-1 / W20)) - 1 if W20 > 0 else 0
 
     current_rev_idx = 0
     for day_offset in range(graph_start_day_idx, 1): # Itera dia a dia
         current_day_end_ts_ms = (day_cutoff_s + (day_offset * 86400)) * 1000
         if day_offset == 0: # Hoje
-             current_day_end_ts_ms = end_date_timestamp_ms
+            current_day_end_ts_ms = end_date_timestamp_ms
         
         processed_reviews_on_this_day_iteration = False
         while current_rev_idx < len(all_reviews):
@@ -182,18 +183,44 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
                 processed_reviews_on_this_day_iteration = True
             else:
                 break
-        
-        day_counts = {CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0}
-        active_cards_today = 0
-        for card_id, state in card_current_states.items():
-            # Considerar apenas cartões cuja última revisão foi *antes do final* do dia atual
-            # E que foram tocados em algum momento (para evitar contagem de cartões nunca vistos no período)
+
+        daily_graph_data_points[day_offset] = {
+            CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0
+        }
+
+        # Laço unificado para cálculo
+        total_retrievability_for_day = 0
+        active_cards_for_etk = 0
+        day_counts_recalc = {CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0}
+
+        for cid, state in card_current_states.items():
             if state['last_rev_time'] < current_day_end_ts_ms:
-                 day_counts[state['category']] += 1
-                 active_cards_today +=1
+                active_cards_for_etk += 1
+                day_counts_recalc[state['category']] += 1
+
+                last_rev_day_s = state['last_rev_time'] / 1000
+                last_rev_day_idx = int((last_rev_day_s - day_cutoff_s) / 86400)
+                
+                days_since_review = day_offset - last_rev_day_idx
+                if days_since_review < 0:
+                    continue
+
+                stability = max(state['ivl'], 1)
+                
+                base = 1 + FACTOR * days_since_review / stability
+                retrievability = max(0, base) ** (-W20)
+                total_retrievability_for_day += retrievability
         
-        if day_offset > graph_start_day_idx and not processed_reviews_on_this_day_iteration and active_cards_today == 0 :
-             if (day_offset -1) in daily_graph_data_points: # Se não houve atividade e o dia anterior existe
+        day_counts = day_counts_recalc
+        
+        daily_etk_points[day_offset] = total_retrievability_for_day
+        if active_cards_for_etk > 0:
+            daily_etk_percent_points[day_offset] = (total_retrievability_for_day / active_cards_for_etk) * 100
+        else:
+            daily_etk_percent_points[day_offset] = 0
+
+        if day_offset > graph_start_day_idx and not processed_reviews_on_this_day_iteration :
+             if (day_offset -1) in daily_graph_data_points:
                 daily_graph_data_points[day_offset] = daily_graph_data_points[day_offset-1].copy()
         else:
             daily_graph_data_points[day_offset] = day_counts
@@ -201,52 +228,53 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     # Certificar que o dia 0 (hoje) tem os dados corretos finais
     final_day_counts = {CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0}
     for card_id, state in card_current_states.items():
-        if state['last_rev_time'] < end_date_timestamp_ms: # Usar o timestamp final do período
+        if state['last_rev_time'] < end_date_timestamp_ms:
             final_day_counts[state['category']] += 1
     daily_graph_data_points[0] = final_day_counts
 
     # Agregar dados diários em chunks (semanas, meses)
     aggregated_flot_data = {CAT_LEARNING: {}, CAT_YOUNG: {}, CAT_MATURE: {}, CAT_RETAINED: {}}
-    # As chaves dos dicionários internos serão o x_flot_chunk_idx (ex: -12, -11, ..., 0)
-    
-    sorted_day_indices = sorted(daily_graph_data_points.keys()) # de graph_start_day_idx a 0
+    aggregated_etk_data = {}
+    aggregated_etk_percent_data = {}
+    etk_percent_temp_accumulator = {}
 
-    for day_idx in sorted_day_indices:
+    for day_idx in sorted(daily_graph_data_points.keys()):
         x_flot_chunk_idx = -math.floor(-day_idx / aggregation_chunk_days)
-        current_day_counts = daily_graph_data_points[day_idx]
         
-        # A contagem para este chunk_idx é a do último dia encontrado para ele
-        aggregated_flot_data[CAT_LEARNING][x_flot_chunk_idx] = current_day_counts[CAT_LEARNING]
-        aggregated_flot_data[CAT_YOUNG][x_flot_chunk_idx] = current_day_counts[CAT_YOUNG]
-        aggregated_flot_data[CAT_MATURE][x_flot_chunk_idx] = current_day_counts[CAT_MATURE]
-        aggregated_flot_data[CAT_RETAINED][x_flot_chunk_idx] = current_day_counts[CAT_RETAINED]
+        aggregated_flot_data[CAT_LEARNING][x_flot_chunk_idx] = daily_graph_data_points[day_idx][CAT_LEARNING]
+        aggregated_flot_data[CAT_YOUNG][x_flot_chunk_idx] = daily_graph_data_points[day_idx][CAT_YOUNG]
+        aggregated_flot_data[CAT_MATURE][x_flot_chunk_idx] = daily_graph_data_points[day_idx][CAT_MATURE]
+        aggregated_flot_data[CAT_RETAINED][x_flot_chunk_idx] = daily_graph_data_points[day_idx][CAT_RETAINED]
+        
+        aggregated_etk_data[x_flot_chunk_idx] = daily_etk_points.get(day_idx, 0)
+        
+        if x_flot_chunk_idx not in etk_percent_temp_accumulator:
+            etk_percent_temp_accumulator[x_flot_chunk_idx] = []
+        etk_percent_temp_accumulator[x_flot_chunk_idx].append(daily_etk_percent_points.get(day_idx, 0))
+
+    for chunk_idx, values in etk_percent_temp_accumulator.items():
+        if values:
+            aggregated_etk_percent_data[chunk_idx] = sum(values) / len(values)
+        else:
+            aggregated_etk_percent_data[chunk_idx] = 0
 
     series = []
-    data_learning, data_young, data_mature, data_retained = [], [], [], []
+    data_learning, data_young, data_mature, data_retained, data_etk = [], [], [], [], []
     
-    all_x_flot_chunk_indices = sorted(list(set(
-        list(aggregated_flot_data[CAT_LEARNING].keys()) +
-        list(aggregated_flot_data[CAT_YOUNG].keys()) +
-        list(aggregated_flot_data[CAT_MATURE].keys()) +
-        list(aggregated_flot_data[CAT_RETAINED].keys())
-    )))
+    all_x_flot_chunk_indices = sorted(list(set(aggregated_etk_data.keys())))
 
-    if not all_x_flot_chunk_indices and graph_start_day_idx == 0 : # Nenhum dado e período é apenas "hoje"
-         # Adiciona um ponto em x=0 para que o gráfico não quebre se não houver revisões
+    if not all_x_flot_chunk_indices and graph_start_day_idx == 0:
          all_x_flot_chunk_indices.append(0)
-
 
     for x_chunk_idx in all_x_flot_chunk_indices:
         data_learning.append([x_chunk_idx, aggregated_flot_data[CAT_LEARNING].get(x_chunk_idx, 0)])
         data_young.append([x_chunk_idx, aggregated_flot_data[CAT_YOUNG].get(x_chunk_idx, 0)])
         data_mature.append([x_chunk_idx, aggregated_flot_data[CAT_MATURE].get(x_chunk_idx, 0)])
         data_retained.append([x_chunk_idx, aggregated_flot_data[CAT_RETAINED].get(x_chunk_idx, 0)])
+        data_etk.append([x_chunk_idx, aggregated_etk_data.get(x_chunk_idx, 0)])
 
     config = mw.addonManager.getConfig(__name__)
     
-    # Código para adicionar séries - "stack: True" removido de cada série individual.
-    # O empilhamento será controlado globalmente via JS (options.series.stack = true).
-    # "bars: {"order": X}" mantido para a ordem visual dentro do empilhamento.
     if not config.get("hide_retained"):
         series.append({"data": data_retained, "label": tr("label_retained"), "color": COLOR_RETAINED, "bars": {"order": 1}})
     if not config.get("hide_mature"):
@@ -256,32 +284,31 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     if not config.get("hide_learning"):
         series.append({"data": data_learning, "label": tr("label_learning"), "color": COLOR_LEARNING, "bars": {"order": 4}})
     
+    series.append({
+        "data": data_etk, 
+        "label": tr("label_total_knowledge"), 
+        "color": "#FF6B35",
+        "lines": {"show": True, "lineWidth": 2, "fill": False},
+        "bars": {"show": False},
+        "yaxis": 2
+    })
+
     min_x_val_for_axis = 0
     max_x_val_for_axis = 0
     if all_x_flot_chunk_indices:
         min_x_val_for_axis = all_x_flot_chunk_indices[0]
         max_x_val_for_axis = all_x_flot_chunk_indices[-1]
-        # Se o último chunk não é 0 (ex: deck life onde a última revisão foi há muito tempo)
-        # ou se o único chunk é negativo.
         if max_x_val_for_axis < 0 :
-             max_x_val_for_axis = 0 # Garante que o eixo vá até "Hoje" visualmente se necessário
-        elif not (0 in all_x_flot_chunk_indices) and max_x_val_for_axis > 0: # Caso estranho, mas para segurança
-             pass # Não precisa ajustar max_x_val_for_axis
-        elif not (0 in all_x_flot_chunk_indices) and min_x_val_for_axis == 0 and max_x_val_for_axis == 0 and daily_graph_data_points[0][CAT_LEARNING] == 0 and daily_graph_data_points[0][CAT_YOUNG] == 0 and daily_graph_data_points[0][CAT_MATURE] == 0 and daily_graph_data_points[0][CAT_RETAINED] == 0:
-             # Caso de nenhum dado e período de apenas 1 dia (Hoje)
-             pass # min_x_val_for_axis e max_x_val_for_axis já são 0.
-        else: # Caso normal, onde 0 (Hoje) deve ser o limite superior ou estar incluído
              max_x_val_for_axis = 0
-
+        elif not (0 in all_x_flot_chunk_indices):
+             max_x_val_for_axis = 0
 
     xaxis_min = min_x_val_for_axis - 0.5
     xaxis_max = max_x_val_for_axis + 0.5
     
-    # Construir o tickFormatter dinamicamente
     tr_today = tr("label_today")
     use_absolute_dates = config.get("use_absolute_dates")
 
-    # Criar mapeamento de meses traduzidos para JavaScript
     month_translations = []
     for i in range(1, 13):
         month_key = ["month_jan", "month_feb", "month_mar", "month_apr", "month_may", "month_jun",
@@ -291,62 +318,43 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
     months_js_array = '["' + '", "'.join(month_translations) + '"]'
 
     if use_absolute_dates:
-        day_cutoff_for_js = day_cutoff_s
-        tick_formatter_js = (
-            "function(val, axis) {\n" +
-            "    if (Math.abs(val - 0) < 0.0001) { return '" + tr_today + "'; }\n" +
-            "    var aggChunkDays = " + str(aggregation_chunk_days) + ";\n" +
-            "    var dayCutoffS = " + str(day_cutoff_for_js) + ";\n" +
-            "    var dayOffset = val * aggChunkDays;\n" +
-            "    var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);\n" +
-            "    var months = " + months_js_array + ";\n" +
-            "    return months[date.getMonth()] + ' ' + date.getDate();\n" +
-            "}"
-        )
+        tick_formatter_js = f"""
+function(val, axis) {{
+    if (Math.abs(val - 0) < 0.0001) {{ return '{tr_today}'; }}
+    var date = new Date(({day_cutoff_s} + (val * {aggregation_chunk_days} * 86400)) * 1000);
+    var months = {months_js_array};
+    return months[date.getMonth()] + ' ' + date.getDate();
+}}
+"""
     else:
-        tick_formatter_js = (
-            "function(val, axis) {\n" +
-            "    var suffix = '" + unit_suffix + "';\n" +
-            "    if (Math.abs(val - 0) < 0.0001) { return '" + tr_today + "'; }\n" +
-            "    return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;\n" +
-            "}"
-        )
-
-    # Passar as strings traduzidas para o JS do tooltip
-    tr_tooltip_period = tr("tooltip_period")
-    tr_tooltip_total = tr("tooltip_total")
-    # As labels das séries já são traduzidas ao serem passadas para o Flot
-    # Portanto, podemos usá-las diretamente no tooltip via item.series.label
+        tick_formatter_js = f"""
+function(val, axis) {{
+    var suffix = '{unit_suffix}';
+    if (Math.abs(val - 0) < 0.0001) {{ return '{tr_today}'; }}
+    return val.toFixed(axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals) + suffix;
+}}
+"""
+    
+    etk_percent_data_json = json.dumps(aggregated_etk_percent_data)
 
     tooltip_html = f"""
 <script>
 $(function() {{
+    var etkPercentData = {etk_percent_data_json};
     var tooltip = $("#evolutionGraphTooltip");
     if (!tooltip.length) {{
         tooltip = $('<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:8px;background-color:#fff;border:1px solid #ddd;color:#333;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.1);pointer-events:none;font-size:0.9em;z-index:100;"></div>').appendTo("body");
     }}
-
-    // Aplica o estilo de fundo diretamente na tabela da legenda
-    try {{
-        var legendTable = $("#{graph_id} .legend table");
-        if (legendTable.length) {{
-            legendTable.css('background-color', 'rgba(255, 255, 255, 0.8)');
-            legendTable.css('border-radius', '4px'); // Adiciona cantos arredondados para consistência
-        }}
-    }} catch (e) {{
-        // Ignora erros caso a legenda não seja encontrada
-    }}
-
     $("#{graph_id}").bind("plothover", function (event, pos, item) {{
         if (item) {{
             var x_val_on_axis = item.datapoint[0];
-            var y_val = item.datapoint[1];
-            var seriesLabel = item.series.label; // Já traduzido
             var totalForDay = 0;
+            var etkAbsValue = "N/A";
+            var etkPercentValue = "N/A";
 
             var plot = $(this).data("plot");
             var allSeries = plot.getData();
-            var pointData = {{}}; // Usar chaves de série já traduzidas
+            var pointData = {{}};
 
             for(var i=0; i < allSeries.length; ++i){{
                  var currentSeries = allSeries[i];
@@ -355,47 +363,41 @@ $(function() {{
                     var d = currentSeries.data[j];
                     if(Math.abs(d[0] - x_val_on_axis) < 0.0001){{
                          if(!pointData[x_val_on_axis]) pointData[x_val_on_axis] = {{}};
-                         pointData[x_val_on_axis][currentSeries.label] = d[1]; // Usa a label da série como chave
-                         totalForDay += d[1];
-                    }}
+                         pointData[x_val_on_axis][currentSeries.label] = d[1];
+                     }}
                 }}
             }}
 
-            var xaxes_options = plot.getOptions().xaxes[0];
-            var aggregationChunkDaysFromOptions = xaxes_options.aggregation_chunk_days || 1;
-            var titleX;
-            var today_str = '{tr_today}'; // Passa a string "Hoje" traduzida
-            var useAbsoluteDates = {str(use_absolute_dates).lower()};
+            var today_str = '{tr_today}';
+            var titleX = item.series.xaxis.tickFormatter(x_val_on_axis, item.series.xaxis);
 
-            if (Math.abs(x_val_on_axis - 0) < 0.0001) {{
-                titleX = today_str;
-            }} else if (useAbsoluteDates) {{
-                var dayCutoffS = {day_cutoff_s};
-                var dayOffset = x_val_on_axis * aggregationChunkDaysFromOptions;
-                var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000);
-                var months = {months_js_array};
-                titleX = months[date.getMonth()] + ' ' + date.getDate();
-            }} else {{
-                var unitSuffixFromOptions = xaxes_options.unit_suffix || 'd';
-                var tickDecimalsFromOptions = xaxes_options.tickDecimals === undefined ? 0 : xaxes_options.tickDecimals;
-                var displayX = x_val_on_axis.toFixed(tickDecimalsFromOptions);
-                titleX = displayX + unitSuffixFromOptions;
-            }}
-
-            var content = "<b>{tr_tooltip_period}" + titleX + "</b><br/>";
+            var content = "<b>{tr("tooltip_period")}" + titleX + "</b><br/>";
             var labelLearning = "{tr("label_learning")}";
             var labelYoung = "{tr("label_young")}";
             var labelMature = "{tr("label_mature")}";
             var labelRetained = "{tr("label_retained")}";
+            var labelETK = "{tr("label_total_knowledge")}";
 
             if(pointData[x_val_on_axis]){{
-                // Acessar usando as labels traduzidas que foram usadas para criar as séries
-                if(pointData[x_val_on_axis][labelLearning] !== undefined) content += labelLearning + ": " + pointData[x_val_on_axis][labelLearning].toFixed(0) + "<br/>";
-                if(pointData[x_val_on_axis][labelYoung] !== undefined) content += labelYoung + ": " + pointData[x_val_on_axis][labelYoung].toFixed(0) + "<br/>";
-                if(pointData[x_val_on_axis][labelMature] !== undefined) content += labelMature + ": " + pointData[x_val_on_axis][labelMature].toFixed(0) + "<br/>";
-                if(pointData[x_val_on_axis][labelRetained] !== undefined) content += labelRetained + ": " + pointData[x_val_on_axis][labelRetained].toFixed(0) + "<br/>";
+                if(pointData[x_val_on_axis][labelLearning] !== undefined) totalForDay += pointData[x_val_on_axis][labelLearning];
+                if(pointData[x_val_on_axis][labelYoung] !== undefined) totalForDay += pointData[x_val_on_axis][labelYoung];
+                if(pointData[x_val_on_axis][labelMature] !== undefined) totalForDay += pointData[x_val_on_axis][labelMature];
+                if(pointData[x_val_on_axis][labelRetained] !== undefined) totalForDay += pointData[x_val_on_axis][labelRetained];
+                
+                if(pointData[x_val_on_axis][labelETK] !== undefined) {{
+                    etkAbsValue = pointData[x_val_on_axis][labelETK].toFixed(1);
+                }}
+                if(etkPercentData[x_val_on_axis] !== undefined) {{
+                    etkPercentValue = etkPercentData[x_val_on_axis].toFixed(1) + "%";
+                }}
             }}
-            content += "<i>{tr_tooltip_total}" + totalForDay.toFixed(0) + "</i>";
+            
+            content += labelLearning + ": " + (pointData[x_val_on_axis]?.[labelLearning]?.toFixed(0) || 0) + "<br/>";
+            content += labelYoung + ": " + (pointData[x_val_on_axis]?.[labelYoung]?.toFixed(0) || 0) + "<br/>";
+            content += labelMature + ": " + (pointData[x_val_on_axis]?.[labelMature]?.toFixed(0) || 0) + "<br/>";
+            content += labelRetained + ": " + (pointData[x_val_on_axis]?.[labelRetained]?.toFixed(0) || 0) + "<br/>";
+            content += "<i>{tr("tooltip_total")}" + totalForDay.toFixed(0) + "</i><br/>";
+            content += "<b>" + labelETK + ": " + etkAbsValue + " (" + etkPercentValue + ")</b>";
 
             tooltip.html(content).css({{top: item.pageY+5, left: item.pageX+5}}).fadeIn(200);
         }} else {{
@@ -410,17 +412,17 @@ $(function() {{
             "min": xaxis_min, 
             "max": xaxis_max, 
             "tickFormatter": tick_formatter_js,
-            "unit_suffix": unit_suffix,
-            "aggregation_chunk_days": aggregation_chunk_days,
-            "tickDecimals": 0 
         },
-        "yaxis": {"min": 0},
+        "yaxes": [
+            {"min": 0, "position": "left"},
+            {"min": 0, "position": "right", "alignTicksWithAxis": 1}
+        ],
         "series": {
             "stack": True,
             "bars": {
                 "show": True, 
                 "align": "center", 
-                "barWidth": 0.9, # Largura de barra mais constante agora que os X são chunks
+                "barWidth": 0.9,
                 "lineWidth": 1, 
                 "fill": 0.8
             }

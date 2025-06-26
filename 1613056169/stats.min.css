@@ -1,0 +1,329 @@
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/NoGraph.esbuild-svelte-fake-css */
+div.svelte-mu9flq {
+  width: min(var(--graph-width), 100%);
+  height: var(--graph-height);
+  opacity: 0.5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/Bar.esbuild-svelte-fake-css */
+div.glossary.svelte-tlw5tc {
+  display: flex;
+  gap: 1em;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/BarScrollable.esbuild-svelte-fake-css */
+div.options.svelte-1d6gow {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  grid-template-areas: "a a b b";
+  gap: 0.5em;
+  align-items: baseline;
+}
+label.svelte-1d6gow {
+  display: contents;
+}
+input.svelte-1d6gow {
+  min-width: 5em;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/Pie.esbuild-svelte-fake-css */
+div.root.svelte-q9ruih {
+  margin: 1em 0;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-items: center;
+  gap: 1em;
+  justify-content: space-around;
+}
+div.grid.svelte-q9ruih {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 0 1em;
+}
+span.colour.svelte-q9ruih {
+  margin-right: -1em;
+}
+div.glossary.svelte-q9ruih {
+  overflow-y: auto;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/IntervalPie.esbuild-svelte-fake-css */
+div.options.svelte-16kcmvk {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5em 1em;
+  align-items: baseline;
+}
+div.totals.svelte-16kcmvk {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  justify-items: start;
+  gap: 0 1em;
+}
+span.svelte-16kcmvk {
+  text-align: center;
+}
+label.svelte-16kcmvk {
+  display: contents;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/GraphTypeSelector.esbuild-svelte-fake-css */
+div.svelte-qwtrzw {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1em;
+  margin: 0.5em;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/IntervalGraph.esbuild-svelte-fake-css */
+label.checkbox.svelte-es63bz {
+  user-select: none;
+  display: block;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/GraphContainer.esbuild-svelte-fake-css */
+.graph.svelte-1i8v5na:focus {
+  outline: 0;
+}
+.container.svelte-1i8v5na {
+  width: 100%;
+  background: var(--canvas-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-medium, 10px);
+  transition: box-shadow var(--transition) ease-in-out;
+  page-break-inside: avoid;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  overflow: hidden;
+}
+.graph.svelte-1i8v5na p {
+  font-size: small;
+  margin-top: 1em;
+}
+.graph.svelte-1i8v5na h1 {
+  border-bottom: 1px var(--border) solid;
+  padding-bottom: 0.25em;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/OldRetentionPie.esbuild-svelte-fake-css */
+label.svelte-4398ac {
+  display: contents;
+}
+small.svelte-4398ac {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25em;
+  max-height: 5em;
+  overflow-y: auto;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/CustomPie.esbuild-svelte-fake-css */
+div.searches.svelte-13i1ha2 {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 1em;
+}
+div.options.svelte-13i1ha2 {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/GraphCategory.esbuild-svelte-fake-css */
+label.svelte-uz0znv {
+  display: contents;
+}
+div.separator.svelte-uz0znv {
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+}
+div.svelte-uz0znv button:where(.svelte-uz0znv),
+div.svelte-uz0znv button:where(.svelte-uz0znv):hover {
+  font-weight: 900;
+  font-size: xx-large;
+  background: none;
+  border: none;
+  border-radius: none;
+  transform: rotate(90deg);
+  transition: transform 0.5s ease-in-out;
+}
+div.hidden.svelte-uz0znv button:where(.svelte-uz0znv) {
+  transform: rotate(0deg);
+}
+button.svelte-uz0znv,
+hr.svelte-uz0znv,
+h3.svelte-uz0znv {
+  margin: 1rem 0.5rem;
+}
+hr.svelte-uz0znv {
+  flex-grow: 1;
+  opacity: 1;
+}
+div.category.svelte-uz0znv {
+  display: grid;
+  gap: 1em;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: calc(100vw - 3em);
+  margin-left: 1em;
+  margin-right: 1em;
+}
+@media only screen and (max-width: 600px) {
+  div.category.svelte-uz0znv {
+    width: calc(100vw - 1rem);
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+}
+@media only screen and (max-width: 1400px) {
+  div.category.svelte-uz0znv {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media only screen and (max-width: 1200px) {
+  div.category.svelte-uz0znv {
+    grid-template-columns: 1fr;
+  }
+}
+@media only screen and (max-width: 600px) {
+  div.category.svelte-uz0znv {
+    font-size: 12px;
+  }
+}
+@media only print {
+  div.category.svelte-uz0znv {
+    display: block;
+    margin-top: 3em;
+  }
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/Warning.esbuild-svelte-fake-css */
+span.svelte-19m2ve4 {
+  color: yellow;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/Candlestick.esbuild-svelte-fake-css */
+div.options.svelte-1d6gow {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  grid-template-areas: "a a b b";
+  gap: 0.5em;
+  align-items: baseline;
+}
+label.svelte-1d6gow {
+  display: contents;
+}
+input.svelte-1d6gow {
+  min-width: 5em;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/MemorisedCalculator.esbuild-svelte-fake-css */
+.big.svelte-1ir14zw {
+  width: 100%;
+  height: 100%;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/TimeMachineScroll.esbuild-svelte-fake-css */
+label.scroll.svelte-s3d78x {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5em 1em;
+  align-items: baseline;
+  width: 100%;
+}
+.scroll.svelte-s3d78x {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5em 1em;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/RevlogGraphs.esbuild-svelte-fake-css */
+div.options.svelte-6sqpe2 {
+  display: flex;
+  justify-content: center;
+  gap: 0.5em;
+  align-items: baseline;
+}
+div.options.svelte-6sqpe2 label:where(.svelte-6sqpe2) {
+  display: contents;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/Heatmap.esbuild-svelte-fake-css */
+.bin.svelte-f00ajz {
+  pointer-events: fill;
+}
+.bin.svelte-f00ajz:focus {
+  outline: none;
+}
+.bin-highlight.svelte-f00ajz {
+  pointer-events: none;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/SRHeatmap.esbuild-svelte-fake-css */
+.options.svelte-159ax3b {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  gap: 0.5em;
+  align-items: baseline;
+  height: 4em;
+}
+.options.svelte-159ax3b label:where(.svelte-159ax3b) {
+  display: contents;
+}
+input[type=number].svelte-159ax3b {
+  min-width: 5em;
+}
+input[type=checkbox].svelte-159ax3b {
+  justify-self: left;
+}
+
+/* fakecss:/home/luc/Programming/python/anki/New Graphs/src/ts/Root.esbuild-svelte-fake-css */
+h1.header.svelte-1gkabcm {
+  margin: 1.5rem;
+}
+div.tooltip.svelte-1gkabcm {
+  position: absolute;
+  opacity: 0;
+  white-space: nowrap;
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 15px;
+  pointer-events: none;
+  transition: opacity var(--transition);
+  color: var(--fg);
+  background: var(--canvas-overlay);
+}
+div.loadOption.svelte-1gkabcm {
+  background-color: rgba(255, 136, 0, 0.116);
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  min-height: 500px;
+  border-radius: var(--border-radius-medium, 10px);
+  margin: -1em;
+  padding: 1em;
+}
+div.loadOption.svelte-1gkabcm button:where(.svelte-1gkabcm) {
+  font-size: 2em;
+  font-weight: 900;
+}
+div.loadOption.svelte-1gkabcm span {
+  border-radius: var(--border-radius-medium, 10px);
+  padding: 0.5em;
+}
+.hover-bar {
+  fill: white;
+  opacity: 0;
+}
+.hover-bar:hover {
+  opacity: 0.1;
+}
