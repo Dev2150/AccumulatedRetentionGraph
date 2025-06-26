@@ -9,7 +9,6 @@
 - `exclude_deleted_cards` (boolean): If `true`, reviews from deleted cards are excluded. Default: `true`.
 - `exclude_suspended_cards` (boolean): If `true`, reviews from suspended cards are excluded. Default: `true`.
 - `use_absolute_dates` (boolean): If `true`, shows absolute dates instead of relative days. Default: `true`.
-- `etk_display_mode` (string): Controls how the Estimated Total Knowledge (ETK) line is displayed. Options: `"absolute"` (shows total knowledge points), `"percent"` (shows average retention as a percentage). Default: `"absolute"`.
 
 ### Main Screen Options
 - `enable_main_screen` (boolean): If `true`, enables the graph on Anki's main screen. Default: `true`.
@@ -37,7 +36,6 @@ Você pode personalizar o comportamento do addon editando o arquivo `config.json
 - `exclude_deleted_cards` (booleano): Se `true`, revisões de cartões deletados são excluídas. Padrão: `true`.
 - `exclude_suspended_cards` (booleano): Se `true`, revisões de cartões suspensos são excluídas. Padrão: `true`.
 - `use_absolute_dates` (booleano): Se `true`, mostra datas absolutas em vez de dias relativos. Padrão: `true`.
-- `etk_display_mode` (string): Controla como a linha de Conhecimento Total Estimado (ETK) é exibida. Opções: `"absolute"` (mostra o total de pontos de conhecimento), `"percent"` (mostra a média de retenção em porcentagem). Padrão: `"absolute"`.
 
 ### Opções da Tela Principal
 - `enable_main_screen` (booleano): Se `true`, habilita o gráfico na tela principal do Anki. Padrão: `true`.

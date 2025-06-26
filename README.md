@@ -26,6 +26,8 @@ The example graph illustrates a real study journey:
 - Line `A` (horizontal arrow at the top) shows a period where no new cards were added, causing the total growth to stagnate.
 - Lines `B` and `C` (diagonal arrows) reveal that, even without new cards, existing knowledge is being consolidated. The light green (Young) and dark green (Mature) areas are increasing, indicating that the cards are maturing and content retention is improving.
 
+The graph also includes an **orange ETK line** (Estimated Total Knowledge) showing your average retention percentage on the right axis, providing insight into the quality of your knowledge retention over time using FSRS retrievability calculations.
+
 The goal is to help you balance the growth of your card volume with the consolidation of existing knowledge. Future versions may allow customization of the interval ranges for each state.
 
 #### **Card States & Colors**
@@ -48,6 +50,8 @@ O gráfico de exemplo ilustra uma jornada de estudo real:
 - A primeira subida acentuada (próximo a 17 de maio) marca o início de um novo tópico de estudo.
 - A linha `A` (seta horizontal no topo) mostra um período em que novos cartões pararam de ser adicionados, fazendo com que o crescimento total estagnasse.
 - As linhas `B` e `C` (setas diagonais) revelam que, mesmo sem novos cartões, o conhecimento existente está sendo consolidado. As áreas verde-claro (Jovem) e verde-escuro (Maduro) aumentam, indicando que os cartões estão amadurecendo e a retenção do conteúdo está melhorando.
+
+O gráfico também inclui uma **linha laranja ETK** (Conhecimento Total Estimado) mostrando sua porcentagem média de retenção no eixo direito, fornecendo insights sobre a qualidade da sua retenção de conhecimento ao longo do tempo usando cálculos de recuperabilidade do FSRS.
 
 O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume de cartões com a consolidação do conhecimento existente. Futuramente, a ideia é permitir o ajuste dos intervalos de dias para cada estado.
 
@@ -75,6 +79,12 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Changelog**
 
+- **v1.7 - 2025-01-20 - ETK Integration**
+    - **NEW:** Added Estimated Total Knowledge (ETK) line overlay using FSRS retrievability calculations
+    - **NEW:** Orange line shows average retention percentage on right Y-axis (0-100%)
+    - **NEW:** Enhanced tooltips display both retention percentage and absolute ETK values
+    - **NEW:** Complete translations for ETK features in English, Spanish, and Portuguese
+    - Improved knowledge quality visualization alongside card quantity metrics
 - **v1.6 - 2025-06-20 - Anki 25.6+ Compatibility**
     - **NEW:** Added compatibility for Anki 25.6+ with new core migration (3.9 → 3.13)
     - Prepared addon for future Anki versions while maintaining backward compatibility
