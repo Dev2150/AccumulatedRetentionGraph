@@ -290,7 +290,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
         "color": "#FF6B35",
         "lines": {"show": True, "lineWidth": 2, "fill": False},
         "bars": {"show": False},
-        "yaxis": 2
+        "stack": False
     })
 
     min_x_val_for_axis = 0
@@ -414,8 +414,7 @@ $(function() {{
             "tickFormatter": tick_formatter_js,
         },
         "yaxes": [
-            {"min": 0, "position": "left"},
-            {"min": 0, "position": "right", "alignTicksWithAxis": 1}
+            {"min": 0, "position": "left"}
         ],
         "series": {
             "stack": True,
