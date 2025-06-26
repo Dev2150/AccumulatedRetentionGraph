@@ -389,7 +389,7 @@ $(function() {{
                     etkPercentValue = pointData[x_val_on_axis][labelRetentionPercent].toFixed(1) + "%";
                 }}
                 if(etkAbsData[x_val_on_axis] !== undefined) {{
-                    etkAbsValue = etkAbsData[x_val_on_axis].toFixed(1);
+                    etkAbsValue = etkAbsData[x_val_on_axis].toFixed(0);
                 }}
             }}
             
@@ -466,14 +466,13 @@ def render_card_evolution_graph(self_instance):
             tooltip_html=tooltip_html
         )
     else:
-        # Para a tela de estatísticas padrão, usamos o método original com xunit e anexamos o script do tooltip
+        # Para a tela de estatísticas padrão, usamos o método original do Anki (sem y2label)
         html += self_instance._graph(
             id=graph_id,
             data=series_data,
             conf=options,
             xunit=aggregation_chunk_days,
-            ylabel=tr("graph_y_label"),
-            y2label=tr("graph_y_label_percent")
+            ylabel=tr("graph_y_label")
         )
         html += tooltip_html
         

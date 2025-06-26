@@ -77,6 +77,10 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 - Licensed under [GNU AGPL, version 3](http://www.gnu.org/licenses/agpl.html)
 - For bugs or suggestions, please open an issue at [https://github.com/cjdduarte/AccumulatedRetentionGraph/issues](https://github.com/cjdduarte/AccumulatedRetentionGraph/issues)
 
+## **Acknowledgments**
+
+- **ETK Formula**: Special thanks to **Luc-Mcgrady** for the FSRS retrievability formula implementation from [Anki Search Stats Extended](https://ankiweb.net/shared/info/1613056169), which inspired and provided the foundation for the ETK (Estimated Total Knowledge) feature in this addon.
+
 ## **Changelog**
 
 - **v1.7 - 2025-01-20 - ETK Integration**
