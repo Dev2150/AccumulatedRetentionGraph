@@ -427,7 +427,7 @@ $(function() {{
         },
         "yaxes": [
             {"min": 0, "position": "left"},
-            {"min": 0, "max": 100, "position": "right", "alignTicksWithAxis": 1}
+            {"min": 0, "max": 100, "position": "right", "alignTicksWithAxis": 1, "show": False}
         ],
         "series": {
             "stack": True,

@@ -7,7 +7,7 @@
 ---
 
 <b>#### New Change:</b>
-<b>- **v1.7 - 2025-06-26 - ETK Integration & FSRS Formula**</b>
+<b>- **v1.8 - 2025-06-28 - UI Improvements**</b>
 
 <p align="center">
   <img src="https://i.ibb.co/5hzHTMKq/image.png" alt="Screenshot of Accumulated Retention Graph">
@@ -83,6 +83,9 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Changelog**
 
+- **v1.8 - 2025-06-28 - UI Improvements**
+    - **IMPROVED:** Hidden right Y-axis labels to reduce visual confusion with primary axis
+    - ETK line functionality remains intact while improving graph readability
 - **v1.7 - 2025-06-26 - ETK Integration & FSRS Formula**
     - **NEW:** Added Estimated Total Knowledge (ETK) line overlay using official FSRS retrievability calculations
     - **NEW:** Enhanced tooltips display both retention percentage and absolute ETK values
