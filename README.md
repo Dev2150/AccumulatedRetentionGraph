@@ -1,13 +1,11 @@
 # **Accumulated Retention Graph**
 
 > **Note:** This document is available in English and Portuguese. The English version is presented first, followed by the Portuguese version.
->
-> **Nota:** Este documento está disponível em inglês e português. A versão em inglês é apresentada primeiro, seguida pela versão em português.
 
 ---
 
 <b>#### New Change:</b>
-<b>- **v1.8 - 2025-06-28 - UI Improvements**</b>
+<b>- **v1.8 - 2025-07-01 - UI Improvements**</b>
 
 <p align="center">
   <img src="https://i.ibb.co/5hzHTMKq/image.png" alt="Screenshot of Accumulated Retention Graph">
@@ -83,8 +81,9 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Changelog**
 
-- **v1.8 - 2025-06-28 - UI Improvements**
+- **v1.8 - 2025-07-01 - UI Improvements**
     - **IMPROVED:** Hidden right Y-axis labels to reduce visual confusion with primary axis
+    - **FIXED:** Removed mispositioned Y2-axis label that appeared outside screen on main page
     - ETK line functionality remains intact while improving graph readability
 - **v1.7 - 2025-06-26 - ETK Integration & FSRS Formula**
     - **NEW:** Added Estimated Total Knowledge (ETK) line overlay using official FSRS retrievability calculations

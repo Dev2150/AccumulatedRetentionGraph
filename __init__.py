@@ -723,10 +723,6 @@ class CompleteCollectionStats:
             html_parts = []
             html_parts.append('<div id="' + id + '" style="height:' + str(height) + 'px; width:95%; margin: 0 auto;"></div>')
             html_parts.append('<p style="text-align: center; font-size: 0.8em; color: #666; margin-top: 0.5em;">' + safe_ylabel + '</p>')
-            if safe_y2label:
-                # Flot não tem um bom suporte para label do segundo eixo, então adicionamos manualmente se existir.
-                # A posição pode não ser perfeita, mas é uma solução.
-                html_parts.append('<p style="position:absolute; top: 50%; right: 0; transform: translateY(-50%) rotate(90deg); font-size: 0.8em; color: #666;">' + safe_y2label + '</p>')
 
             
             js_parts = []
