@@ -443,7 +443,7 @@ $(function() {{
         "legend": {
             "show": True,
             "position": "nw",
-            "backgroundColor": None,
+            "backgroundColor": "#ffffff",
             "backgroundOpacity": 0
         }
     }
