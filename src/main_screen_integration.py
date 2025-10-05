@@ -16,6 +16,9 @@ from .translations import tr
 # Classe Helper para gerar estatísticas da tela principal.
 # Movida para fora das funções de hook para evitar re-declaração.
 class CompleteCollectionStats:
+	"""Helper class to generate main screen statistics.
+	Moved outside the hook functions to avoid redeclaration."""
+
 	def __init__(self, col, deck_id=None, period="3m"):
 		self.col = col
 		self._deck_id = deck_id
@@ -122,7 +125,8 @@ class CompleteCollectionStats:
 		html_parts.append(safe_title)
 		html_parts.append('</h3>')
 		if safe_subtitle:
-			html_parts.append('<p style="text-align: center; color: #666; margin-top: 0.2em; margin-bottom: 0.5em; font-size: 0.9em;">')
+			html_parts.append(
+				'<p style="text-align: center; color: #666; margin-top: 0.2em; margin-bottom: 0.5em; font-size: 0.9em;">')
 			html_parts.append(safe_subtitle)
 			html_parts.append('</p>')
 		return ''.join(html_parts)
@@ -143,7 +147,6 @@ class CompleteCollectionStats:
 				tooltip_js_content = re.sub(r'^\s*\$\(function\(\)\s*\{', '', tooltip_js_content)
 				tooltip_js_content = re.sub(r'\}\s*\)\;\s*$', '', tooltip_js_content)
 
-
 		try:
 			if not data or not any(s.get('data') for s in data):
 				return '<div style="color:#888;text-align:center;margin:1em 0;">' + tr("graph_no_data") + '</div>'
@@ -159,83 +162,46 @@ class CompleteCollectionStats:
 			try:
 				py_day_cutoff_s = self.col.sched.day_cutoff
 			except AttributeError:
-				py_day_cutoff_s = self.col.sched.dayCutoff # For older Anki versions
+				py_day_cutoff_s = self.col.sched.dayCutoff  # For older Anki versions
 
 			html_parts = []
-			html_parts.append('<div id="' + id + '" style="height:' + str(height) + 'px; width:95%; margin: 0 auto;"></div>')
-			html_parts.append('<p style="text-align: center; font-size: 0.8em; color: #666; margin-top: 0.5em;">' + safe_ylabel + '</p>')
+			html_parts.append(
+				'<div id="' + id + '" style="height:' + str(height) + 'px; width:95%; margin: 0 auto;"></div>')
+			html_parts.append(
+				'<p style="text-align: center; font-size: 0.8em; color: #666; margin-top: 0.5em;">' + safe_ylabel + '</p>')
 
-
-			js_parts = []
-			js_parts.append('<script type="text/javascript">')
-			js_parts.append('(function() {')
-			js_parts.append('  var attempts = 0;')
-			js_parts.append('  var maxAttempts = 20;')
-			js_parts.append('  var retryInterval = 200;')
-			js_parts.append('  ')
-			js_parts.append('  function checkDependencies() {')
-			js_parts.append('    return (typeof $ !== "undefined" && typeof $.plot !== "undefined");')
-			js_parts.append('  }')
-			js_parts.append('  ')
-			js_parts.append('  function loadFlotLibraries(callback) {')
-			js_parts.append('    if (typeof $ === "undefined") {')
-			js_parts.append('      console.error("Card Evolution JS: jQuery not available");')
-			js_parts.append('      return false;')
-			js_parts.append('    }')
-			js_parts.append('    ')
-			js_parts.append('    if (typeof $.plot === "undefined") {')
-			js_parts.append('      var flotScript = document.createElement("script");')
-			js_parts.append('      flotScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js";')
-			js_parts.append('      flotScript.onload = function() {')
-			js_parts.append('        var stackScript = document.createElement("script");')
-			js_parts.append('        stackScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.min.js";')
-			js_parts.append('        stackScript.onload = function() {')
-			js_parts.append('          setTimeout(callback, 100);')
-			js_parts.append('        };')
-			js_parts.append('        stackScript.onerror = function() {')
-			js_parts.append('          console.error("Card Evolution JS: Failed to load Flot stack plugin");')
-			js_parts.append('          setTimeout(callback, 100);')
-			js_parts.append('        };')
-			js_parts.append('        document.head.appendChild(stackScript);')
-			js_parts.append('      };')
-			js_parts.append('      flotScript.onerror = function() {')
-			js_parts.append('        console.error("Card Evolution JS: Failed to load Flot from CDN");')
-			js_parts.append('        callback();')
-			js_parts.append('      };')
-			js_parts.append('      document.head.appendChild(flotScript);')
-			js_parts.append('      return false;')
-			js_parts.append('    }')
-			js_parts.append('    ')
-			js_parts.append('    callback();')
-			js_parts.append('    return true;')
-			js_parts.append('  }')
-			js_parts.append('  ')
-			js_parts.append('  function renderGraph() {')
-			js_parts.append('    try {')
-			js_parts.append('      var graphDiv = $("#' + id + '");')
-			js_parts.append('      if (graphDiv.length === 0) {')
-			js_parts.append('')
-			js_parts.append('        return false;')
-			js_parts.append('      }')
-			js_parts.append('      ')
-			js_parts.append('      var data = ' + data_json_for_js + ';')
-			js_parts.append('      var options = ' + options_json_for_js + ';')
-			js_parts.append('      ')
-			js_parts.append('      if (options.xaxis && typeof options.xaxis.tickFormatter === "string") {')
-			js_parts.append('        delete options.xaxis.tickFormatter;')
-			js_parts.append('      }')
-			js_parts.append('      ')
-			js_parts.append('      if (options.series) {')
-			js_parts.append('        options.series.stack = true;')
-			js_parts.append('        if (options.series.bars) {')
-			js_parts.append('          options.series.bars.show = true;')
-			js_parts.append('        } else {')
-			js_parts.append('          options.series.bars = { show: true };')
-			js_parts.append('        }')
-			js_parts.append('      } else {')
-			js_parts.append('        options.series = { stack: true, bars: { show: true } };')
-			js_parts.append('      }')
-			js_parts.append('      ')
+			js_parts = ['<script type="text/javascript">', '(function() {', '  var attempts = 0;',
+						'  var maxAttempts = 20;', '  var retryInterval = 200;', '  ',
+						'  function checkDependencies() {',
+						'    return (typeof $ !== "undefined" && typeof $.plot !== "undefined");', '  }', '  ',
+						'  function loadFlotLibraries(callback) {', '    if (typeof $ === "undefined") {',
+						'      console.error("Card Evolution JS: jQuery not available");', '      return false;',
+						'    }', '    ', '    if (typeof $.plot === "undefined") {',
+						'      var flotScript = document.createElement("script");',
+						'      flotScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js";',
+						'      flotScript.onload = function() {',
+						'        var stackScript = document.createElement("script");',
+						'        stackScript.src = "https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.stack.min.js";',
+						'        stackScript.onload = function() {', '          setTimeout(callback, 100);',
+						'        };', '        stackScript.onerror = function() {',
+						'          console.error("Card Evolution JS: Failed to load Flot stack plugin");',
+						'          setTimeout(callback, 100);', '        };',
+						'        document.head.appendChild(stackScript);', '      };',
+						'      flotScript.onerror = function() {',
+						'        console.error("Card Evolution JS: Failed to load Flot from CDN");',
+						'        callback();', '      };', '      document.head.appendChild(flotScript);',
+						'      return false;', '    }', '    ', '    callback();', '    return true;', '  }', '  ',
+						'  function renderGraph() {', '    try {', '      var graphDiv = $("#' + id + '");',
+						'      if (graphDiv.length === 0) {', '', '        return false;', '      }', '      ',
+						'      var data = ' + data_json_for_js + ';',
+						'      var options = ' + options_json_for_js + ';', '      ',
+						'      if (options.xaxis && typeof options.xaxis.tickFormatter === "string") {',
+						'        delete options.xaxis.tickFormatter;', '      }', '      ',
+						'      if (options.series) {', '        options.series.stack = true;',
+						'        if (options.series.bars) {', '          options.series.bars.show = true;',
+						'        } else {', '          options.series.bars = { show: true };', '        }',
+						'      } else {', '        options.series = { stack: true, bars: { show: true } };', '      }',
+						'      ']
 
 			use_absolute_dates = config.get("use_absolute_dates")
 
@@ -243,64 +209,34 @@ class CompleteCollectionStats:
 			month_translations_main = []
 			for i in range(1, 13):
 				month_key = ["month_jan", "month_feb", "month_mar", "month_apr", "month_may", "month_jun",
-							 "month_jul", "month_aug", "month_sep", "month_oct", "month_nov", "month_dec"][i-1]
+							 "month_jul", "month_aug", "month_sep", "month_oct", "month_nov", "month_dec"][i - 1]
 				month_translations_main.append(tr(month_key))
 			months_js_array_main = '["' + '", "'.join(month_translations_main) + '"]'
 
 			if use_absolute_dates:
-				formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(py_agg_days) + '; var dayCutoffS = ' + str(py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); var months = ' + months_js_array_main + '; return months[date.getMonth()] + \' \' + date.getDate(); }'
+				formatter_func_str = 'function(val, axis) { var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var aggDays = ' + str(
+					py_agg_days) + '; var dayCutoffS = ' + str(
+					py_day_cutoff_s) + '; var dayOffset = val * aggDays; var date = new Date((dayCutoffS + (dayOffset * 86400)) * 1000); var months = ' + months_js_array_main + '; return months[date.getMonth()] + \' \' + date.getDate(); }'
 			else:
 				formatter_func_str = 'function(val, axis) { var unitSuffix = \'' + py_unit_suffix + '\'; var todayLabel = \'' + py_today_label + '\'; if (Math.abs(val - 0) < 0.001) { return todayLabel; } var decimals = axis.options.tickDecimals === undefined ? 0 : axis.options.tickDecimals; return val.toFixed(decimals) + unitSuffix; }'
 
-			js_parts.append('      options.xaxis.tickFormatter = ' + formatter_func_str + ';')
-			js_parts.append('      ')
-			js_parts.append('      $.plot(graphDiv, data, options);')
-			js_parts.append('      ')
-			js_parts.append('      ' + tooltip_js_content)
-			js_parts.append('      ')
-			js_parts.append('')
-			js_parts.append('      return true;')
-			js_parts.append('    } catch (e) {')
-			js_parts.append('      console.error("Card Evolution JS: Error rendering graph on attempt " + attempts + ":", e);')
-			js_parts.append('      return false;')
-			js_parts.append('    }')
-			js_parts.append('  }')
-			js_parts.append('  ')
-			js_parts.append('  function attemptRender() {')
-			js_parts.append('    attempts++;')
-			js_parts.append('    ')
-			js_parts.append('    if (attempts > maxAttempts) {')
-			js_parts.append('      console.error("Card Evolution JS: Failed to render graph after " + maxAttempts + " attempts. Dependencies or DOM may not be ready.");')
-			js_parts.append('      return;')
-			js_parts.append('    }')
-			js_parts.append('    ')
-			js_parts.append('    if (!checkDependencies()) {')
-			js_parts.append('      loadFlotLibraries(function() {')
-			js_parts.append('        setTimeout(attemptRender, retryInterval);')
-			js_parts.append('      });')
-			js_parts.append('      return;')
-			js_parts.append('    }')
-			js_parts.append('    ')
-			js_parts.append('    if (renderGraph()) {')
-			js_parts.append('      return;')
-			js_parts.append('    }')
-			js_parts.append('    ')
-			js_parts.append('    setTimeout(attemptRender, retryInterval);')
-			js_parts.append('  }')
-			js_parts.append('  ')
-			js_parts.append('  function initWhenReady() {')
-			js_parts.append('    if (document.readyState === "loading") {')
-			js_parts.append('      document.addEventListener("DOMContentLoaded", function() {')
-			js_parts.append('        setTimeout(attemptRender, 50);')
-			js_parts.append('      });')
-			js_parts.append('    } else {')
-			js_parts.append('      setTimeout(attemptRender, 50);')
-			js_parts.append('    }')
-			js_parts.append('  }')
-			js_parts.append('  ')
-			js_parts.append('  initWhenReady();')
-			js_parts.append('})();')
-			js_parts.append('</script>')
+			js_parts += ['      options.xaxis.tickFormatter = ' + formatter_func_str + ';', '      ',
+						 '      $.plot(graphDiv, data, options);', '      ', '      ' + tooltip_js_content, '      ',
+						 '',
+						 '      return true;', '    } catch (e) {',
+						 '      console.error("Card Evolution JS: Error rendering graph on attempt " + attempts + ":", e);',
+						 '      return false;', '    }', '  }', '  ', '  function attemptRender() {', '    attempts++;',
+						 '    ', '    if (attempts > maxAttempts) {',
+						 '      console.error("Card Evolution JS: Failed to render graph after " + maxAttempts + " attempts. Dependencies or DOM may not be ready.");',
+						 '      return;', '    }', '    ', '    if (!checkDependencies()) {',
+						 '      loadFlotLibraries(function() {', '        setTimeout(attemptRender, retryInterval);',
+						 '      });', '      return;', '    }', '    ', '    if (renderGraph()) {', '      return;',
+						 '    }', '    ', '    setTimeout(attemptRender, retryInterval);', '  }', '  ',
+						 '  function initWhenReady() {', '    if (document.readyState === "loading") {',
+						 '      document.addEventListener("DOMContentLoaded", function() {',
+						 '        setTimeout(attemptRender, 50);', '      });', '    } else {',
+						 '      setTimeout(attemptRender, 50);', '    }', '  }', '  ', '  initWhenReady();', '})();',
+						 '</script>']
 
 			return ''.join(html_parts) + ''.join(js_parts)
 
@@ -310,8 +246,11 @@ class CompleteCollectionStats:
 			print("Card Evolution Main Screen: Traceback (Python): " + str(traceback.format_exc()))
 			return '<div style="color:red;text-align:center;">Erro Py ao gerar gráfico: ' + str(e) + '</div>'
 
+
 def _render_main_screen_graph_html(deck_id=None):
-	"""Gera o HTML completo para o gráfico da tela principal."""
+	"""Generates the complete HTML for the main screen chart.
+	Gera o HTML completo para o gráfico da tela principal."""
+
 	config = mw.addonManager.getConfig(__name__)
 	period = config.get("main_screen_period")
 	stats_instance = CompleteCollectionStats(mw.col, deck_id=deck_id, period=period)
@@ -321,8 +260,10 @@ def _render_main_screen_graph_html(deck_id=None):
 	# Envolve o gráfico renderizado em um contêiner pai, agora com estilo.
 	return f'<div class="evolution-graph-main-wrapper" style="max-width: 900px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
 
+
 def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserContent):
-	"""Adiciona o gráfico de evolução do status à tela principal do navegador de baralhos."""
+	"""Adds the status evolution graph to the deck browser main screen.
+	Adiciona o gráfico de evolução do status à tela principal do navegador de baralhos."""
 	config = mw.addonManager.getConfig(__name__)
 	if not config.get("show_in_deck_browser"):
 		return
@@ -334,8 +275,10 @@ def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserConten
 	except Exception as e:
 		print(f"Accumulated Retention: Failed to render graph on deck browser: {e}")
 
+
 def on_overview_render(overview: Overview, content: OverviewContent):
-	"""Adiciona o gráfico de evolução do status à tela de visão geral do baralho."""
+	"""Adds the status evolution graph to the deck overview screen.
+	Adiciona o gráfico de evolução do status à tela de visão geral do baralho."""
 	config = mw.addonManager.getConfig(__name__)
 	if not config.get("show_in_overview"):
 		return
@@ -351,10 +294,13 @@ def on_overview_render(overview: Overview, content: OverviewContent):
 	except Exception as e:
 		print(f"Accumulated Retention: Failed to render graph on overview: {e}")
 
+
 def init_main_screen_hooks():
-	"""Inicializa os ganchos para a tela principal (Navegador de Baralhos)."""
+	"""Initializes hooks for the main screen (Deck Browser).
+	Inicializa os ganchos para a tela principal (Navegador de Baralhos)."""
 	config = mw.addonManager.getConfig(__name__)
 	if config.get("enable_main_screen"):
+		# Checking show_in_overview/deck_browser is done inside each hook.
 		# A verificação de show_in_overview/deck_browser é feita dentro de cada hook.
 		overview_will_render_content.append(on_overview_render)
 		deck_browser_will_render_content.append(on_deck_browser_render)

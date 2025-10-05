@@ -9,7 +9,7 @@ CAT_RETAINED = 3
 COLOR_LEARNING = stats.colLearn
 COLOR_YOUNG = stats.colYoung
 COLOR_MATURE = stats.colMature
-COLOR_RETAINED = "#004080" # Dark blue, adjust as needed
+COLOR_RETAINED = "#004080"  # Dark blue, adjust as needed
 
 # Interval thresholds (in days)
 INTERVAL_LEARNING_MAX = 7
