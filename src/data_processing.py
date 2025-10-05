@@ -4,7 +4,8 @@ import math
 from aqt import mw
 
 from .constants import CAT_LEARNING, INTERVAL_LEARNING_MAX, INTERVAL_YOUNG_MAX, CAT_YOUNG, INTERVAL_MATURE_MAX, \
-	CAT_MATURE, CAT_RETAINED, COLOR_RETAINED, COLOR_MATURE, COLOR_YOUNG, COLOR_LEARNING
+	CAT_MATURE, CAT_RETAINED, COLOR_RETAINED, COLOR_MATURE, COLOR_YOUNG, COLOR_LEARNING, COLOR_RETENTION_ABSOLUTE, \
+	COLOR_RETENTION_RELATIVE
 from .translations import tr
 
 
@@ -214,7 +215,9 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 	# Agregar dados diários em chunks (semanas, meses)
 	aggregated_flot_data = {CAT_LEARNING: {}, CAT_YOUNG: {}, CAT_MATURE: {}, CAT_RETAINED: {}}
 	aggregated_etk_data = {}
+	aggregated_etk_absolute_data = {}
 	aggregated_etk_percent_data = {}
+	etk_absolute_temp_accumulator = {}
 	etk_percent_temp_accumulator = {}
 
 	for day_idx in sorted(daily_graph_data_points.keys()):
@@ -227,18 +230,22 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 
 		aggregated_etk_data[x_flot_chunk_idx] = daily_etk_points.get(day_idx, 0)
 
+		if x_flot_chunk_idx not in etk_absolute_temp_accumulator:
+			etk_absolute_temp_accumulator[x_flot_chunk_idx] = []
+		etk_absolute_temp_accumulator[x_flot_chunk_idx].append(daily_etk_points.get(day_idx, 0))
+
 		if x_flot_chunk_idx not in etk_percent_temp_accumulator:
 			etk_percent_temp_accumulator[x_flot_chunk_idx] = []
 		etk_percent_temp_accumulator[x_flot_chunk_idx].append(daily_etk_percent_points.get(day_idx, 0))
 
+	for chunk_idx, values in etk_absolute_temp_accumulator.items():
+		aggregated_etk_absolute_data[chunk_idx] = daily_etk_points.get(chunk_idx, 0)
+
 	for chunk_idx, values in etk_percent_temp_accumulator.items():
-		if values:
-			aggregated_etk_percent_data[chunk_idx] = sum(values) / len(values)
-		else:
-			aggregated_etk_percent_data[chunk_idx] = 0
+		aggregated_etk_percent_data[chunk_idx] = sum(values) / len(values) if values else 0
 
 	series = []
-	data_learning, data_young, data_mature, data_retained, data_etk_percent = [], [], [], [], []
+	data_learning, data_young, data_mature, data_retained, data_etk_absolute, data_etk_percent = [], [], [], [], [], []
 
 	all_x_flot_chunk_indices = sorted(list(set(aggregated_etk_data.keys())))
 
@@ -250,6 +257,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 		data_young.append([x_chunk_idx, aggregated_flot_data[CAT_YOUNG].get(x_chunk_idx, 0)])
 		data_mature.append([x_chunk_idx, aggregated_flot_data[CAT_MATURE].get(x_chunk_idx, 0)])
 		data_retained.append([x_chunk_idx, aggregated_flot_data[CAT_RETAINED].get(x_chunk_idx, 0)])
+		data_etk_absolute.append([x_chunk_idx, aggregated_etk_absolute_data.get(x_chunk_idx, 0)])
 		data_etk_percent.append([x_chunk_idx, aggregated_etk_percent_data.get(x_chunk_idx, 0)])
 
 	config = mw.addonManager.getConfig(__name__)
@@ -265,15 +273,27 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 		series.append(
 			{"data": data_learning, "label": tr("label_learning"), "color": COLOR_LEARNING, "bars": {"order": 4}})
 
-	series.append({
-		"data": data_etk_percent,
-		"label": tr("label_avg_retention_percent"),
-		"color": "#FF6B35",
-		"lines": {"show": True, "lineWidth": 2, "fill": False},
-		"bars": {"show": False},
-		"stack": False,
-		"yaxis": 2
-	})
+	if not config.get("hide_total_knowledge_graph"):
+		series.append({
+			"data": data_etk_absolute,
+			"label": tr("label_total_knowledge"),
+			"color": COLOR_RETENTION_ABSOLUTE,
+			"lines": {"show": True, "lineWidth": 2, "fill": False},
+			"bars": {"show": False},
+			"stack": False,
+			"yaxis": 1
+		})
+
+	if not config.get("hide_retention_relative"):
+		series.append({
+			"data": data_etk_percent,
+			"label": tr("label_avg_retention_percent"),
+			"color": COLOR_RETENTION_RELATIVE,
+			"lines": {"show": True, "lineWidth": 2, "fill": False},
+			"bars": {"show": False},
+			"stack": False,
+			"yaxis": 2
+		})
 
 	min_x_val_for_axis = 0
 	max_x_val_for_axis = 0

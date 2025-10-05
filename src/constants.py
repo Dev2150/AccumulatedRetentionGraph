@@ -10,6 +10,8 @@ COLOR_LEARNING = stats.colLearn
 COLOR_YOUNG = stats.colYoung
 COLOR_MATURE = stats.colMature
 COLOR_RETAINED = "#004080"  # Dark blue, adjust as needed
+COLOR_RETENTION_ABSOLUTE = "#bf5028"
+COLOR_RETENTION_RELATIVE = "#FF6B35"
 
 # Interval thresholds (in days)
 INTERVAL_LEARNING_MAX = 7
