@@ -6,7 +6,7 @@ from anki.utils import ids2str
 from aqt import mw
 from aqt.deckbrowser import DeckBrowser, DeckBrowserContent
 # Imports adicionais
-from aqt.gui_hooks import overview_will_render_content, deck_browser_will_render_content
+from aqt.gui_hooks import overview_will_render_content, deck_browser_will_render_content, webview_will_set_content
 from aqt.overview import Overview, OverviewContent
 
 from .rendering import render_card_evolution_graph
@@ -258,7 +258,8 @@ def _render_main_screen_graph_html(deck_id=None):
 	graph_html = render_card_evolution_graph(stats_instance)
 
 	# Envolve o gráfico renderizado em um contêiner pai, agora com estilo.
-	return f'<div class="evolution-graph-main-wrapper" style="max-width: 900px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
+	width = config.get("main_screen_width")
+	return f'<div class="evolution-graph-main-wrapper" style="min-width: {width}px; margin: 20px auto; padding: 1em; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">{graph_html}</div>'
 
 
 def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserContent):

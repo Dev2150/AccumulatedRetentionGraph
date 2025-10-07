@@ -12,6 +12,7 @@
   "enable_main_screen": true,
   "main_screen_period": "2m",
   "main_screen_aggregation": "d",
+  "main_screen_width": 900,
   "main_screen_height": 250,
   "show_in_overview": true,
   "show_in_deck_browser": true,

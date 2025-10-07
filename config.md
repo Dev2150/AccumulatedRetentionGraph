@@ -16,6 +16,7 @@
 - `enable_main_screen` (boolean): If `true`, enables the graph on Anki's main screen. Default: `true`.
 - `main_screen_period` (string): Default period for main screen graph. Options: "1m", "2m", "3m", "6m", "9m", "1y", "2y", "deck_life". Default: `"2m"`.
 - `main_screen_aggregation` (string): Aggregation level for main screen graph. Options: "d" (daily), "w" (weekly). Default: `"d"`.
+- `main_screen_width` (integer): Width of the graph in pixels on main screen. Default: `900`.
 - `main_screen_height` (integer): Height of the graph in pixels on main screen. Default: `250`.
 - `show_in_overview` (boolean): If `true`, shows the graph in deck overview screen. Default: `true`.
 - `show_in_deck_browser` (boolean): If `true`, shows the graph in deck browser screen. Default: `true`.
@@ -45,6 +46,7 @@ Você pode personalizar o comportamento do addon editando o arquivo `config.json
 - `enable_main_screen` (booleano): Se `true`, habilita o gráfico na tela principal do Anki. Padrão: `true`.
 - `main_screen_period` (string): Período padrão para o gráfico da tela principal. Opções: "1m", "2m", "3m", "6m", "9m", "1y", "2y", "deck_life". Padrão: `"2m"`.
 - `main_screen_aggregation` (string): Nível de agregação para o gráfico da tela principal. Opções: "d" (diário), "w" (semanal). Padrão: `"d"`.
+- `main_screen_width` (integer): Largura do gráfico em pixels na tela principal. Padrão: `900`.
 - `main_screen_height` (integer): Altura do gráfico em pixels na tela principal. Padrão: `250`.
 - `show_in_overview` (booleano): Se `true`, mostra o gráfico na tela de visão geral do deck. Padrão: `true`.
 - `show_in_deck_browser` (booleano): Se `true`, mostra o gráfico na tela do navegador de decks. Padrão: `true`.

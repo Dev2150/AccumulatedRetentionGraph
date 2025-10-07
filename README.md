@@ -81,6 +81,10 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Changelog**
 
+- **v1.9 - 2025-10-07 - UI Improvements** (Dev2150)
+    - **NEW:** Show graph in 'Congratulations' screen, 
+    - **NEW:** Display total knowledge (ETK) graph
+    - Modify graph width - can use pixels or percentage of the whole screen width 
 - **v1.8 - 2025-07-01 - UI Improvements**
     - **IMPROVED:** Hidden right Y-axis labels to reduce visual confusion with primary axis
     - **FIXED:** Removed mispositioned Y2-axis label that appeared outside screen on main page

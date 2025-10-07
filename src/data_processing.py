@@ -387,11 +387,9 @@ $(function() {{
                 if(pointData[x_val_on_axis][labelMature] !== undefined) totalForDay += pointData[x_val_on_axis][labelMature];
                 if(pointData[x_val_on_axis][labelRetained] !== undefined) totalForDay += pointData[x_val_on_axis][labelRetained];
                 
-                if(pointData[x_val_on_axis][labelRetentionPercent] !== undefined) {{
-                    etkPercentValue = pointData[x_val_on_axis][labelRetentionPercent].toFixed(1) + "%";
-                }}
                 if(etkAbsData[x_val_on_axis] !== undefined) {{
                     etkAbsValue = etkAbsData[x_val_on_axis].toFixed(0);
+                    etkPercentValue = (100 * etkAbsData[x_val_on_axis] / totalForDay).toFixed(1)
                 }}
             }}
             
