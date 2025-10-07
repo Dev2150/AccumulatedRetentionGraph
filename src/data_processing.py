@@ -5,7 +5,7 @@ from aqt import mw
 
 from .constants import CAT_LEARNING, INTERVAL_LEARNING_MAX, INTERVAL_YOUNG_MAX, CAT_YOUNG, INTERVAL_MATURE_MAX, \
 	CAT_MATURE, CAT_RETAINED, COLOR_RETAINED, COLOR_MATURE, COLOR_YOUNG, COLOR_LEARNING, COLOR_RETENTION_ABSOLUTE, \
-	COLOR_RETENTION_RELATIVE
+	COLOR_RETENTION_RELATIVE, COLOR_STABILITY_AVERAGE
 from .translations import tr
 
 
@@ -142,6 +142,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 	daily_graph_data_points = {}
 	daily_etk_points = {}
 	daily_etk_percent_points = {}
+	daily_stability_points = {}
 
 	current_rev_idx = 0
 	for day_offset in range(graph_start_day_idx, 1):  # Itera dia a dia
@@ -171,6 +172,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 		# Laço unificado para cálculo
 		total_retrievability_for_day = 0
 		active_cards_for_etk = 0
+		total_stability_for_day = 0
 		day_counts_recalc = {CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0}
 
 		for cid, state in card_current_states.items():
@@ -186,6 +188,7 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 					continue
 
 				stability = max(state['ivl'], 0.1)  # Usar ivl como aproximação de estabilidade, evitar divisão por zero
+				total_stability_for_day += stability
 
 				# Fórmula de Retrievability FSRS
 				retrievability = fsrs_retrievability(days_since_review, stability)
@@ -205,6 +208,11 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 		else:
 			daily_graph_data_points[day_offset] = day_counts
 
+		if active_cards_for_etk > 0:
+			daily_stability_points[day_offset] = total_stability_for_day / active_cards_for_etk
+		else:
+			daily_stability_points[day_offset] = 0
+
 	# Certificar que o dia 0 (hoje) tem os dados corretos finais
 	final_day_counts = {CAT_LEARNING: 0, CAT_YOUNG: 0, CAT_MATURE: 0, CAT_RETAINED: 0}
 	for card_id, state in card_current_states.items():
@@ -217,8 +225,10 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 	aggregated_etk_data = {}
 	aggregated_etk_absolute_data = {}
 	aggregated_etk_percent_data = {}
+	aggregated_avg_stability_data = {}
 	etk_absolute_temp_accumulator = {}
 	etk_percent_temp_accumulator = {}
+	avg_stability_temp_accumulator = {}
 
 	for day_idx in sorted(daily_graph_data_points.keys()):
 		x_flot_chunk_idx = -math.floor(-day_idx / aggregation_chunk_days)
@@ -238,14 +248,21 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 			etk_percent_temp_accumulator[x_flot_chunk_idx] = []
 		etk_percent_temp_accumulator[x_flot_chunk_idx].append(daily_etk_percent_points.get(day_idx, 0))
 
+		if x_flot_chunk_idx not in avg_stability_temp_accumulator:
+			avg_stability_temp_accumulator[x_flot_chunk_idx] = []
+		avg_stability_temp_accumulator[x_flot_chunk_idx].append(daily_stability_points.get(day_idx, 0))
+
 	for chunk_idx, values in etk_absolute_temp_accumulator.items():
 		aggregated_etk_absolute_data[chunk_idx] = daily_etk_points.get(chunk_idx, 0)
 
 	for chunk_idx, values in etk_percent_temp_accumulator.items():
 		aggregated_etk_percent_data[chunk_idx] = sum(values) / len(values) if values else 0
 
+	for chunk_idx, values in avg_stability_temp_accumulator.items():
+		aggregated_avg_stability_data[chunk_idx] = sum(values) / len(values) if values else 0
+
 	series = []
-	data_learning, data_young, data_mature, data_retained, data_etk_absolute, data_etk_percent = [], [], [], [], [], []
+	data_learning, data_young, data_mature, data_retained, data_etk_absolute, data_etk_percent, data_avg_stability  = [], [], [], [], [], [], []
 
 	all_x_flot_chunk_indices = sorted(list(set(aggregated_etk_data.keys())))
 
@@ -259,6 +276,8 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 		data_retained.append([x_chunk_idx, aggregated_flot_data[CAT_RETAINED].get(x_chunk_idx, 0)])
 		data_etk_absolute.append([x_chunk_idx, aggregated_etk_absolute_data.get(x_chunk_idx, 0)])
 		data_etk_percent.append([x_chunk_idx, aggregated_etk_percent_data.get(x_chunk_idx, 0)])
+		data_avg_stability.append([x_chunk_idx, aggregated_avg_stability_data.get(x_chunk_idx, 0)])
+
 
 	config = mw.addonManager.getConfig(__name__)
 
@@ -284,7 +303,15 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 			"yaxis": 1
 		})
 
-	if not config.get("hide_retention_relative"):
+	y2label = ""
+	is_showing_y2 = False
+	y2_max = None
+	if not config.get("secondary_axis_dynamic_max"):
+		y2_max = config.get("secondary_axis_maximum_value")
+
+
+	secondary_graph = config.get("secondary_graph")
+	if secondary_graph == 'retention_relative':
 		series.append({
 			"data": data_etk_percent,
 			"label": tr("label_avg_retention_percent"),
@@ -294,6 +321,19 @@ def get_card_evolution_data(self_instance, graph_id="evolutionGraph"):
 			"stack": False,
 			"yaxis": 2
 		})
+		y2label = tr("graph_y_label_stability_days")
+	elif secondary_graph == 'stability_average':
+		series.append({
+			"data": data_avg_stability,
+			"label": tr("label_avg_stability"),
+			"color": COLOR_STABILITY_AVERAGE,
+			"lines": {"show": True, "lineWidth": 2, "fill": False},
+			"bars": {"show": False},
+			"stack": False,
+			"yaxis": 2
+		})
+		y2label = tr("graph_y_label_percent")
+		is_showing_y2 = True
 
 	min_x_val_for_axis = 0
 	max_x_val_for_axis = 0
@@ -339,11 +379,13 @@ function(val, axis) {{
 
 	etk_percent_data_json = json.dumps(aggregated_etk_percent_data)
 	etk_abs_data_json = json.dumps(aggregated_etk_data)
+	stability_avg_data_json = json.dumps(aggregated_avg_stability_data)
 
 	tooltip_html = f"""
 <script>
 $(function() {{
     var etkAbsData = {etk_abs_data_json};
+    var etkStabData = {stability_avg_data_json};
     var tooltip = $("#evolutionGraphTooltip");
     if (!tooltip.length) {{
         tooltip = $('<div id="evolutionGraphTooltip" style="position:absolute;display:none;padding:8px;background-color:#fff;border:1px solid #ddd;color:#333;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.1);pointer-events:none;font-size:0.9em;z-index:100;"></div>').appendTo("body");
@@ -354,6 +396,7 @@ $(function() {{
             var totalForDay = 0;
             var etkAbsValue = "N/A";
             var etkPercentValue = "N/A";
+            var etkAvgValue = "N/A";
 
             var plot = $(this).data("plot");
             var allSeries = plot.getData();
@@ -391,6 +434,9 @@ $(function() {{
                     etkAbsValue = etkAbsData[x_val_on_axis].toFixed(0);
                     etkPercentValue = (100 * etkAbsData[x_val_on_axis] / totalForDay).toFixed(1)
                 }}
+                if(etkStabData[x_val_on_axis] !== undefined) {{
+                    etkAvgValue = etkStabData[x_val_on_axis].toFixed(0);
+                }}
             }}
             
             content += labelLearning + ": " + (pointData[x_val_on_axis]?.[labelLearning]?.toFixed(0) || 0) + "<br/>";
@@ -399,7 +445,8 @@ $(function() {{
             content += labelRetained + ": " + (pointData[x_val_on_axis]?.[labelRetained]?.toFixed(0) || 0) + "<br/>";
             content += "<i>{tr("tooltip_total")}" + totalForDay.toFixed(0) + "</i><br/><hr style='margin: 4px 0; border-top: 1px solid #ccc;'/>";
             content += "<b>" + labelRetentionPercent + ": " + etkPercentValue + "</b><br/>";
-            content += "<b>{tr("label_total_knowledge")}: " + etkAbsValue + "</b>";
+            content += "<b>{tr("label_total_knowledge")}: " + etkAbsValue + "</b><br/>";
+            content += "<b>{tr("label_avg_stability")}: " + etkAvgValue + "</b>";
 
             tooltip.html(content).css({{top: item.pageY+5, left: item.pageX+5}}).fadeIn(200);
         }} else {{
@@ -417,7 +464,7 @@ $(function() {{
 		},
 		"yaxes": [
 			{"min": 0, "position": "left"},
-			{"min": 0, "max": 100, "position": "right", "alignTicksWithAxis": 1, "show": False}
+			{"min": 0, "max": y2_max, "position": "right", "alignTicksWithAxis": 1, "show": is_showing_y2}
 		],
 		"series": {
 			"stack": True,
@@ -437,4 +484,4 @@ $(function() {{
 			"backgroundOpacity": 0
 		}
 	}
-	return series, graph_options, tooltip_html, aggregation_chunk_days
+	return series, graph_options, tooltip_html, aggregation_chunk_days, y2label

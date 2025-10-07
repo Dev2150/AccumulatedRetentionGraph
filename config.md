@@ -6,7 +6,9 @@
 - `hide_mature` (boolean): If `true`, the "Mature" section is not shown. Default: `false`.
 - `hide_retained` (boolean): If `true`, the "Retained" section is not shown. Default: `false`.
 - `hide_retention_absolute` (boolean): If `true`, retained cards over time is not shown. Default: `false`.
-- `hide_retention_relative` (boolean): If `true`, retention percentage over time is not shown. Default: `false`.
+- `secondary_graph` (string): Options: `retention_relative`, `stability_average`. Default: `retention_relative`
+- `secondary_axis_dynamic_max` (boolean): If `true`, for certain charts, the maximum value of the secondary axis will scale dynamically. Default: `false`
+- `secondary_axis_maximum_value` (integer): Maximum value for the secondary axis, if `secondary_axis_dynamic_max` is false. Default: `365`
 - `show_at_beginning` (boolean): If `true`, the graph will be displayed before Anki's default statistics. Default: `false`.
 - `exclude_deleted_cards` (boolean): If `true`, reviews from deleted cards are excluded. Default: `true`.
 - `exclude_suspended_cards` (boolean): If `true`, reviews from suspended cards are excluded. Default: `true`.
@@ -36,7 +38,6 @@ Você pode personalizar o comportamento do addon editando o arquivo `config.json
 - `hide_mature` (booleano): Se `true`, a seção "Maduro" não é mostrada. Padrão: `false`.
 - `hide_retained` (booleano): Se `true`, a seção "Retido" não é mostrada. Padrão: `false`.
 - `hide_retention_absolute` (booleano): Se `true`, os cartões retidos ao longo do tempo não serão exibidos. Padrão: `false`.
-- `hide_retention_relative` (booleano): Se `true`, a porcentagem de retenção ao longo do tempo não é exibida. Padrão: `false`.
 - `show_at_beginning` (booleano): Se `true`, o gráfico será exibido antes das estatísticas padrão do Anki. Padrão: `false`.
 - `exclude_deleted_cards` (booleano): Se `true`, revisões de cartões deletados são excluídas. Padrão: `true`.
 - `exclude_suspended_cards` (booleano): Se `true`, revisões de cartões suspensos são excluídas. Padrão: `true`.

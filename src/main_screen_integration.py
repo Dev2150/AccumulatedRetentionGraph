@@ -283,7 +283,7 @@ def on_review_finished_render(web_content, context):
 	if not (type(context).__name__ == "OverviewBottomBar" and context.overview.mw.col.sched._is_finished()):
 		return
 	try:
-		current_deck_id = mw.col.decks.get_current_id() # Get the ID of the deck that was just finished
+		current_deck_id = mw.col.decks.get_current_id()  # Get the ID of the deck that was just finished
 		graph_html = _render_main_screen_graph_html(deck_id=current_deck_id)
 		web_content.body += graph_html
 	except Exception as e:
@@ -319,4 +319,3 @@ def init_main_screen_hooks():
 		overview_will_render_content.append(on_overview_render)
 		deck_browser_will_render_content.append(on_deck_browser_render)
 		webview_will_set_content.append(on_review_finished_render)
-

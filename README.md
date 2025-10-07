@@ -81,7 +81,8 @@ O objetivo é, portanto, ajudar você a equilibrar o crescimento do seu volume d
 
 ## **Changelog**
 
-- **v1.9 - 2025-10-07 - UI Improvements** (Dev2150)
+- **v1.9 - 2025-10-08 - UI Improvements** (Dev2150)
+    - **NEW:** Can choose to display average stability graph, can make the secondary axis dynamic or set a certain max value  
     - **NEW:** Show graph in 'Congratulations' screen, 
     - **NEW:** Display total knowledge (ETK) graph
     - Modify graph width - can use pixels or percentage of the whole screen width 
