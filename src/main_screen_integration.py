@@ -277,6 +277,19 @@ def on_deck_browser_render(deck_browser: DeckBrowser, content: DeckBrowserConten
 		print(f"Accumulated Retention: Failed to render graph on deck browser: {e}")
 
 
+def on_review_finished_render(web_content, context):
+	"""
+	Appends the graph to the 'Congratulations, you're finished' screen."""
+	if not (type(context).__name__ == "OverviewBottomBar" and context.overview.mw.col.sched._is_finished()):
+		return
+	try:
+		current_deck_id = mw.col.decks.get_current_id() # Get the ID of the deck that was just finished
+		graph_html = _render_main_screen_graph_html(deck_id=current_deck_id)
+		web_content.body += graph_html
+	except Exception as e:
+		print(f"Accumulated Retention: Failed to render graph on finish screen: {e}")
+
+
 def on_overview_render(overview: Overview, content: OverviewContent):
 	"""Adds the status evolution graph to the deck overview screen.
 	Adiciona o gráfico de evolução do status à tela de visão geral do baralho."""
@@ -305,3 +318,5 @@ def init_main_screen_hooks():
 		# A verificação de show_in_overview/deck_browser é feita dentro de cada hook.
 		overview_will_render_content.append(on_overview_render)
 		deck_browser_will_render_content.append(on_deck_browser_render)
+		webview_will_set_content.append(on_review_finished_render)
+
